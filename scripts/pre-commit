@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# Pre-commit hook to format changed files
+
+./gradlew ktlintFormat
+git add .
