@@ -22,7 +22,8 @@ import java.util.Optional
 import kotlin.math.abs
 
 /**
- * By default, this class uses multi-tag PNP and lowest ambiguity as a fallback strategy
+ * This class uses normal multi-tag PNP and lowest ambiguity using the gyro rotation
+ *  for the internal cam-to-tag transform as a fallback strategy
  */
 class VisionEstimator(
   private val tagLayout: AprilTagFieldLayout,
@@ -187,16 +188,16 @@ class VisionEstimator(
         camToTag.best.translation,
         Rotation3d(
           camToTag.best.x,
-          camToTag.best.x,
-          driveHeading!!.radians + robotToCam.rotation.z
+          camToTag.best.y,
+          driveHeading!!.radians + robotToCam.rotation.z - knownTags[0].pose.rotation.z
         )
       ).inverse()
       val altTagToCam = Transform3d(
         camToTag.alt.translation,
         Rotation3d(
           camToTag.alt.x,
-          camToTag.alt.x,
-          driveHeading!!.radians + robotToCam.rotation.z
+          camToTag.alt.y,
+          driveHeading!!.radians + robotToCam.rotation.z - knownTags[0].pose.rotation.z
         )
       ).inverse()
       val bestPose: Pose3d = knownTags[0].pose.transformBy(bestTagToCam)

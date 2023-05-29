@@ -93,7 +93,6 @@ repositories {
 }
 
 sourceSets {
-  main.java.srcDirs = ['src/main/java']
   main.kotlin.srcDirs = ['src/main/java', 'src/main/kotlin']
   main.resources.srcDirs = ['src/main/resources']
 }
@@ -138,7 +137,7 @@ dokkaHtml.configure {
       sourceLink {
         localDirectory.set(file("src/main/kotlin"))
         remoteUrl.set(new URL(
-                "https://github.com/blair-robot-project/robot2023/blob/main/src/main/kotlin"))
+                "https://github.com/blair-robot-project/framework2023/blob/main/src/main/kotlin"))
         remoteLineSuffix.set("#L")
       }
 
