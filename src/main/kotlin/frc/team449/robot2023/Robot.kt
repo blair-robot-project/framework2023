@@ -28,7 +28,7 @@ class Robot : RobotBase() {
     PowerDistribution.ModuleType.kRev
   )
 
-  override val drive = SwerveDrive.createSwerve(ahrs)
+  override val drive = SwerveDrive.createSwerve(ahrs, field)
 
   @Log(name = "Joystick Input")
   override val oi = createOrthogonalHolonomicOI(drive, driveController)

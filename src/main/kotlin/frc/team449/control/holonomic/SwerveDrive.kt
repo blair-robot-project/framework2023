@@ -6,6 +6,7 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator
 import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Rotation2d
+import edu.wpi.first.math.geometry.Transform2d
 import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.math.kinematics.ChassisSpeeds
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics
@@ -13,8 +14,11 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition
 import edu.wpi.first.math.kinematics.SwerveModuleState
 import edu.wpi.first.wpilibj.RobotBase.isReal
 import edu.wpi.first.wpilibj.Timer
+import edu.wpi.first.wpilibj.smartdashboard.Field2d
 import edu.wpi.first.wpilibj2.command.SubsystemBase
+import frc.team449.RobotLoop
 import frc.team449.control.VisionEstimator
+import frc.team449.robot2023.Robot
 import frc.team449.robot2023.constants.RobotConstants
 import frc.team449.robot2023.constants.drives.SwerveConstants
 import frc.team449.robot2023.constants.vision.VisionConstants
@@ -37,7 +41,8 @@ open class SwerveDrive(
   private val ahrs: AHRS,
   override var maxLinearSpeed: Double,
   override var maxRotSpeed: Double,
-  private val cameras: List<VisionEstimator> = mutableListOf()
+  private val cameras: List<VisionEstimator> = mutableListOf(),
+  private val field: Field2d
 ) : SubsystemBase(), HolonomicDrive {
 
   private val kinematics = SwerveDriveKinematics(
@@ -125,6 +130,8 @@ open class SwerveDrive(
       getPositions()
     )
 
+    setModulePoses()
+
     this.lastTime = currTime
   }
 
@@ -140,6 +147,13 @@ open class SwerveDrive(
    */
   private fun getStates(): Array<SwerveModuleState> {
     return Array(modules.size) { i -> modules[i].state }
+  }
+
+  private fun setModulePoses() {
+    this.field.getObject("FL").pose = this.pose.plus(Transform2d(Translation2d(SwerveConstants.WHEELBASE / 2, SwerveConstants.TRACKWIDTH / 2), this.getPositions()[0].angle))
+    this.field.getObject("FR").pose = this.pose.plus(Transform2d(Translation2d(SwerveConstants.WHEELBASE / 2, -SwerveConstants.TRACKWIDTH / 2), this.getPositions()[1].angle))
+    this.field.getObject("BL").pose = this.pose.plus(Transform2d(Translation2d(-SwerveConstants.WHEELBASE / 2, SwerveConstants.TRACKWIDTH / 2), this.getPositions()[2].angle))
+    this.field.getObject("BR").pose = this.pose.plus(Transform2d(Translation2d(-SwerveConstants.WHEELBASE / 2, -SwerveConstants.TRACKWIDTH / 2), this.getPositions()[0].angle))
   }
 
   private fun localize() = try {
@@ -182,7 +196,7 @@ open class SwerveDrive(
 
   companion object {
     /** Create a swerve drivetrain using DriveConstants */
-    fun createSwerve(ahrs: AHRS): SwerveDrive {
+    fun createSwerve(ahrs: AHRS, field: Field2d): SwerveDrive {
       val driveMotorController = { PIDController(SwerveConstants.DRIVE_KP, SwerveConstants.DRIVE_KI, SwerveConstants.DRIVE_KD) }
       val turnMotorController = { PIDController(SwerveConstants.TURN_KP, SwerveConstants.TURN_KI, SwerveConstants.TURN_KD) }
       val driveFeedforward = SimpleMotorFeedforward(SwerveConstants.DRIVE_KS, SwerveConstants.DRIVE_KV, SwerveConstants.DRIVE_KA)
@@ -274,7 +288,8 @@ open class SwerveDrive(
           ahrs,
           RobotConstants.MAX_LINEAR_SPEED,
           RobotConstants.MAX_ROT_SPEED,
-          VisionConstants.ESTIMATORS
+          VisionConstants.ESTIMATORS,
+          field
         )
       } else {
         SwerveSim(
@@ -282,7 +297,8 @@ open class SwerveDrive(
           ahrs,
           RobotConstants.MAX_LINEAR_SPEED,
           RobotConstants.MAX_ROT_SPEED,
-          VisionConstants.ESTIMATORS
+          VisionConstants.ESTIMATORS,
+          field
         )
       }
     }

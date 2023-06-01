@@ -54,6 +54,6 @@ object SwerveConstants {
 
   /** Wheelbase = wheel-to-wheel distance from the side of the robot */
   /** Trackwidth = wheel-to-wheel distance from the front/back of the robot */
-  val WHEELBASE = Units.inchesToMeters(30.0)
-  val TRACKWIDTH = Units.inchesToMeters(27.00)
+  val WHEELBASE = Units.inchesToMeters(30.0) // ex. FL to BL
+  val TRACKWIDTH = Units.inchesToMeters(27.00) // ex. BL to BR
 }
