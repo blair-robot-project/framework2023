@@ -8,16 +8,23 @@ import frc.team449.control.OI
 import frc.team449.robot2023.constants.RobotConstants
 import kotlin.math.PI
 
+/**
+ * Make the robot face a specified angle.
+ * @param drive The robot's drivetrain.
+ * @param oi The OI to control the drivetrain.
+ * @param controller The PID controller to adjust the robot's heading.
+ * @param angleSetpoint The desired heading of the robot in radians.
+ */
 class TurnCommand(
   private val drive: DriveSubsystem,
   private val oi: OI,
   private val controller: PIDController,
-  private val setpoint: Double
+  private val angleSetpoint: Double
 ) : CommandBase() {
   init {
     addRequirements(drive)
     controller.enableContinuousInput(-PI, PI)
-    controller.setSetpoint(setpoint)
+    controller.setSetpoint(angleSetpoint)
     controller.setTolerance(0.1)
   }
 

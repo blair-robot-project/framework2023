@@ -15,13 +15,14 @@ import kotlin.math.PI
 import kotlin.math.abs
 
 /**
- * @param name the name of the module (relevant for logging)
- * @param drivingMotor the motor that controls the speed of the module
- * @param turningMotor the motor that controls the turning(angle) of the module
- * @param driveController the velocity control PID for speed of the module
- * @param turnController the position control PID for turning(angle) of the module
- * @param driveFeedforward voltage predicting equation for a specified speed of the module
- * @param location the location of the module in reference to the center of the robot
+ * Controls a Swerve Module.
+ * @param name The name of the module (used for logging).
+ * @param drivingMotor The motor that controls the speed of the module.
+ * @param turningMotor The motor that controls the angle of the module
+ * @param driveController The velocity control for speed of the module
+ * @param turnController The position control for the angle of the module
+ * @param driveFeedforward The voltage predicting equation for a given speed of the module.
+ * @param location The location of the module in reference to the center of the robot.
  * NOTE: In relation to the robot [+X is forward, +Y is left, and +THETA is Counter Clock-Wise].
  */
 open class SwerveModule(
@@ -41,6 +42,7 @@ open class SwerveModule(
 
   var desiredSpeed = 0.0
 
+  /** The module's [SwerveModuleState], containing speed and angle. */
   open var state: SwerveModuleState
     get() {
       return SwerveModuleState(
@@ -53,7 +55,7 @@ open class SwerveModule(
         stop()
         return
       }
-      /** Ensure the module doesn't turn the long way around (more than 90 deg) */
+      /** Ensure the module doesn't turn more than 90 degrees. */
       val state = SwerveModuleState.optimize(
         desiredState,
         Rotation2d(turningMotor.position)
@@ -64,6 +66,7 @@ open class SwerveModule(
       driveController.setpoint = state.speedMetersPerSecond
     }
 
+  /** The module's [SwerveModulePosition], containing distance and angle. */
   open val position: SwerveModulePosition
     get() {
       return SwerveModulePosition(
@@ -72,7 +75,7 @@ open class SwerveModule(
       )
     }
 
-  /** Keep same direction of module but keep speed at zero */
+  /** Set module speed to zero but keep module angle the same. */
   fun stop() {
     turnController.setpoint = turningMotor.position
     desiredSpeed = 0.0
@@ -96,13 +99,9 @@ open class SwerveModule(
     )
     turningMotor.set(turnPid)
   }
-
-  /**
-   * Creates a simulated or a real robot based
-   * on if the robot is being simulated.
-   * @see SwerveModule for parameter description
-   */
+  
   companion object {
+    /** Create a real or simulated [SwerveModule] based on the simulation status of the robot. */
     fun create(
       name: String,
       drivingMotor: WrappedMotor,
@@ -137,10 +136,7 @@ open class SwerveModule(
   }
 }
 
-/**
- * A "simulated" swerve module that just pretends
- * it immediately got to whatever desired state was given
- */
+/** A "simulated" swerve module. Immediately reaches to its desired state. */
 class SwerveModuleSim(
   name: String,
   drivingMotor: WrappedMotor,

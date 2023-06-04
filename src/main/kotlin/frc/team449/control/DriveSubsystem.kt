@@ -18,10 +18,10 @@ interface DriveSubsystem : Subsystem, Loggable {
 
   var pose: Pose2d
 
-  /** Set the desired speeds to go at. */
+  /** Sets the drivetrain's desired speeds. */
   fun set(desiredSpeeds: ChassisSpeeds)
 
-  /** Set both motors' voltage to 0. */
+  /** Sets all the robot's drive motors to 0. */
   fun stop()
 
   /**

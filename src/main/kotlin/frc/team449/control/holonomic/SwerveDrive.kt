@@ -31,10 +31,13 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 
 /**
- * @param modules the list of swerve modules on this drivetrain
- * @param ahrs the gyro that is mounted on the chassis
- * @param maxLinearSpeed the maximum translation speed of the chassis.
- * @param maxRotSpeed the maximum rotation speed of the chassis
+ * A Swerve Drive chassis.
+ * @param modules An array of [SwerveModule]s that are on the drivetrain.
+ * @param ahrs The gyro that is mounted on the chassis.
+ * @param maxLinearSpeed The maximum translation speed of the chassis.
+ * @param maxRotSpeed The maximum rotation speed of the chassis.
+ * @param cameras The cameras that help estimate the robot's pose.
+ * @param field The SmartDashboard [Field2d] widget that shows the robot's pose.
  */
 open class SwerveDrive(
   private val modules: List<SwerveModule>,
@@ -45,14 +48,16 @@ open class SwerveDrive(
   private val field: Field2d
 ) : SubsystemBase(), HolonomicDrive {
 
+  /** The kinematics that convert [ChassisSpeeds] into multiple [SwerveModuleState] objects. */
   private val kinematics = SwerveDriveKinematics(
-    *this.modules
-      .map { it.location }.toTypedArray()
+    *this.modules.map { it.location }.toTypedArray()
   )
 
+  /** The current speed of the robot's drive. */
   @Log.ToString(name = "Current Speeds")
   var currentSpeeds = ChassisSpeeds()
 
+  /** Pose estimator that estimates the robot's position as a [Pose2d]. */
   private val poseEstimator = SwerveDrivePoseEstimator(
     kinematics,
     ahrs.heading,
@@ -71,17 +76,18 @@ open class SwerveDrive(
     this.desiredSpeeds = desiredSpeeds
   }
 
+  /** The measured pitch of the robot from the gyro sensor. */
   val pitch: Rotation2d
     get() = Rotation2d(MathUtil.angleModulus(ahrs.pitch.radians))
+
+  /** The measured roll of the robot from the gyro sensor. */
   val roll: Rotation2d
     get() = Rotation2d(MathUtil.angleModulus(ahrs.roll.radians))
 
-  /** The x y theta location of the robot on the field */
+  /** The (x, y, theta) position of the robot on the field. */
   override var pose: Pose2d
     @Log.ToString(name = "Pose")
-    get() {
-      return this.poseEstimator.estimatedPosition
-    }
+    get() = this.poseEstimator.estimatedPosition
     set(value) {
       this.poseEstimator.resetPosition(
         ahrs.heading,
@@ -90,6 +96,7 @@ open class SwerveDrive(
       )
     }
 
+  /** Stops the robot's drive. */
   override fun stop() {
     this.set(ChassisSpeeds(0.0, 0.0, 0.0))
   }
@@ -97,6 +104,7 @@ open class SwerveDrive(
   override fun periodic() {
     val currTime = Timer.getFPGATimestamp()
 
+    // Updates the robot's currentSpeeds.
     currentSpeeds = kinematics.toChassisSpeeds(
       modules[0].state,
       modules[1].state,
@@ -104,12 +112,11 @@ open class SwerveDrive(
       modules[3].state
     )
 
+    // Converts the desired [ChassisSpeeds] into an array of [SwerveModuleState].
     val desiredModuleStates =
       this.kinematics.toSwerveModuleStates(this.desiredSpeeds)
 
-    /** If any module is going faster than the max speed,
-     *  apply scaling down and make sure there isn't
-     *  any early desaturation */
+    // Scale down module speed if a module is going faster than the max speed, and prevent early desaturation.
     SwerveDriveKinematics.desaturateWheelSpeeds(
       desiredModuleStates,
       SwerveConstants.MAX_ATTAINABLE_MK4I_SPEED
@@ -122,34 +129,34 @@ open class SwerveDrive(
     for (module in modules)
       module.update()
 
-    // TODO: Test enabling vision
-//    if (cameras.isNotEmpty()) localize()
+    // if (cameras.isNotEmpty()) localize()
 
+    // Update the robot's pose using the gyro heading and the SwerveModulePositions of each module.
     this.poseEstimator.update(
       ahrs.heading,
       getPositions()
     )
 
-    setModulePoses()
+    // Sets the robot's pose and individual module rotations on the SmartDashboard [Field2d] widget.
+    setRobotPose()
 
     this.lastTime = currTime
   }
 
-  /**
-   * @return an array of [SwerveModulePosition] for each module, containing [angle, position]
-   */
+  /** @return An array of [SwerveModulePosition] for each module, containing distance and angle. */
   private fun getPositions(): Array<SwerveModulePosition> {
     return Array(modules.size) { i -> modules[i].position }
   }
 
-  /**
-   * @return an array of [SwerveModuleState] for each module, containing [angle, velocity]
-   */
+
+   /** @return An array of [SwerveModuleState] for each module, containing speed and angle. */
   private fun getStates(): Array<SwerveModuleState> {
     return Array(modules.size) { i -> modules[i].state }
   }
 
-  private fun setModulePoses() {
+
+  private fun setRobotPose() {
+    this.field.robotPose = this.pose
     this.field.getObject("FL").pose = this.pose.plus(Transform2d(Translation2d(SwerveConstants.WHEELBASE / 2, SwerveConstants.TRACKWIDTH / 2), this.getPositions()[0].angle))
     this.field.getObject("FR").pose = this.pose.plus(Transform2d(Translation2d(SwerveConstants.WHEELBASE / 2, -SwerveConstants.TRACKWIDTH / 2), this.getPositions()[1].angle))
     this.field.getObject("BL").pose = this.pose.plus(Transform2d(Translation2d(-SwerveConstants.WHEELBASE / 2, SwerveConstants.TRACKWIDTH / 2), this.getPositions()[2].angle))
@@ -195,7 +202,7 @@ open class SwerveDrive(
   }
 
   companion object {
-    /** Create a swerve drivetrain using DriveConstants */
+    /** Create a [SwerveDrive] using [SwerveConstants]. */
     fun createSwerve(ahrs: AHRS, field: Field2d): SwerveDrive {
       val driveMotorController = { PIDController(SwerveConstants.DRIVE_KP, SwerveConstants.DRIVE_KI, SwerveConstants.DRIVE_KD) }
       val turnMotorController = { PIDController(SwerveConstants.TURN_KP, SwerveConstants.TURN_KI, SwerveConstants.TURN_KD) }
@@ -303,7 +310,7 @@ open class SwerveDrive(
       }
     }
 
-    /** Helper to make turning motors for swerve */
+    /** Helper to make turning motors for swerve. */
     private fun makeDrivingMotor(
       name: String,
       motorId: Int,
@@ -322,7 +329,7 @@ open class SwerveDrive(
         currentLimit = SwerveConstants.DRIVE_CURRENT_LIM
       )
 
-    /** Helper to make turning motors for swerve */
+    /** Helper to make turning motors for swerve. */
     private fun makeTurningMotor(
       name: String,
       motorId: Int,

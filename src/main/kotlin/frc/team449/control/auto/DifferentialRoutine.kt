@@ -7,7 +7,7 @@ import edu.wpi.first.wpilibj2.command.CommandBase
 import frc.team449.control.differential.DifferentialDrive
 
 /**
- * @param drive The holonomic drive subsystem to be used when following a trajectory
+ * @param drive The differential drive subsystem to be used when following a trajectory.
  * @param eventMap A hash map of event marker names paired with the command you want to run that cannot require drive
  * @param translationTol Allowed error in meters when following a trajectory
  * @param thetaTol Allowed error in radians when following a trajectory

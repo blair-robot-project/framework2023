@@ -42,10 +42,10 @@ class HolonomicOI(
   private val fieldOriented: () -> Boolean
 ) : OI, Sendable {
 
-  /** Previous x velocity (scaled and clamped) */
+  /** Previous X velocity (scaled and clamped). */
   private var prevX = 0.0
 
-  /** Previous y velocity (scaled and clamped) */
+  /** Previous Y velocity (scaled and clamped) */
   private var prevY = 0.0
 
   private var prevTime = Double.NaN

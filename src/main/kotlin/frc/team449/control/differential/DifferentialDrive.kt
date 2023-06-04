@@ -1,8 +1,10 @@
 package frc.team449.control.differential
 
 import edu.wpi.first.math.VecBuilder
+import edu.wpi.first.math.controller.DifferentialDriveFeedforward
 import edu.wpi.first.math.controller.PIDController
 import edu.wpi.first.math.controller.SimpleMotorFeedforward
+import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator
 import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.kinematics.ChassisSpeeds
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics
@@ -24,16 +26,20 @@ import io.github.oblarg.oblog.Loggable
 import io.github.oblarg.oblog.annotations.Log
 
 /**
- * A differential drive with closed-loop velocity control using PID
- * @param makeVelPID Used to make two copies of the same PIDController for both sides of the
- * drivetrain
+ * A differential drive (aka. tank drive).
+ * @param leftLeader The lead motor of the left side.
+ * @param rightLeader The lead motor of the right side.
+ * @param ahrs The gyro that is mounted on the chassis.
+ * @param feedForward The differential drive feed forward used for calculating the side voltages.
+ * @param makeSidePID Used to make two copies of the same PID controller to control both sides of the robot.
+ * @param trackwidth The distance between the two wheel sides of the robot.
  */
 open class DifferentialDrive(
   private val leftLeader: WrappedMotor,
   private val rightLeader: WrappedMotor,
   private val ahrs: AHRS,
-  private val feedforward: SimpleMotorFeedforward,
-  private val makeVelPID: () -> PIDController,
+  private val feedForward: DifferentialDriveFeedforward,
+  private val makeSidePID: () -> PIDController,
   private val trackwidth: Double
 ) : DriveSubsystem, SubsystemBase(), Loggable {
   init {
@@ -41,85 +47,94 @@ open class DifferentialDrive(
     rightLeader.encoder.resetPosition(0.0)
   }
 
-  /**
-   * The kinematics used to convert [DifferentialDriveWheelSpeeds] to [ChassisSpeeds]
-   */
-  val kinematics = DifferentialDriveKinematics(trackwidth)
+  /** Kinematics used to convert [ChassisSpeeds] to [DifferentialDriveWheelSpeeds] */
+  private val kinematics = DifferentialDriveKinematics(trackwidth)
 
-  /** Odometer to keep track of where the robot is */
-  val odometer = DifferentialDriveOdometry(ahrs.heading, leftLeader.position, rightLeader.position)
+  fun getKinematics(): DifferentialDriveKinematics {return kinematics}
 
-  /** Velocity PID controller for left side */
-  val leftPID = makeVelPID()
+  /** Pose estimator that estimates the robot's position as a [Pose2d]. */
+  val poseEstimator = DifferentialDrivePoseEstimator(
+    kinematics,
+    ahrs.heading,
+    leftLeader.position,
+    rightLeader.position,
+    Pose2d()
+  )
 
-  /** Velocity PID controller for right side */
-  val rightPID = makeVelPID()
+  /** Velocity PID controller for left side. */
+  private val leftPID = makeSidePID()
 
-  /** Variable to keep track of the wheel speeds*/
-  @Log.ToString(name = "Desired Differential Speeds")
-  var wheelSpeeds = DifferentialDriveWheelSpeeds(0.0, 0.0)
+  /** Velocity PID controller for right side. */
+  private val rightPID = makeSidePID()
 
-  private var previousTime = Timer.getFPGATimestamp()
+  @Log.ToString(name = "Desired Speeds")
+  var desiredWheelSpeeds = DifferentialDriveWheelSpeeds(0.0, 0.0)
+
+  private var previousTime = Double.NaN
   private var prevWheelSpeeds = DifferentialDriveWheelSpeeds(0.0, 0.0)
 
-  init {
-    leftLeader.encoder.resetPosition(0.0)
-    rightLeader.encoder.resetPosition(0.0)
-  }
+  private var prevLeftVel = 0.0
+  private var prevRightVel = 0.0
+  private var leftVel = 0.0
+  private var rightVel = 0.0
 
-  /**
-   * Convert from x, y, rotation to left and right speeds
-   *
-   * @param desiredSpeeds The [ChassisSpeeds] desired for the drive
-   */
 
+  /** Calculate left and right side speeds from given [ChassisSpeeds]. */
   override fun set(desiredSpeeds: ChassisSpeeds) {
-    prevWheelSpeeds = wheelSpeeds
-    wheelSpeeds = kinematics.toWheelSpeeds(desiredSpeeds)
-    wheelSpeeds.desaturate(RobotConstants.MAX_LINEAR_SPEED)
+    prevWheelSpeeds = desiredWheelSpeeds
+
+    prevLeftVel = desiredWheelSpeeds.leftMetersPerSecond
+    prevRightVel = desiredWheelSpeeds.rightMetersPerSecond
+
+    desiredWheelSpeeds = kinematics.toWheelSpeeds(desiredSpeeds)
+    desiredWheelSpeeds.desaturate(RobotConstants.MAX_LINEAR_SPEED)
+
+    leftVel = desiredWheelSpeeds.leftMetersPerSecond
+    rightVel = desiredWheelSpeeds.rightMetersPerSecond
   }
 
+  /** The (x, y, theta) position of the robot on the field. */
   @get:Log.ToString(name = "Pose")
   override var pose: Pose2d
-    get() = this.odometer.poseMeters
+    get() = this.poseEstimator.estimatedPosition
     set(pose) {
       leftLeader.encoder.resetPosition(0.0)
       rightLeader.encoder.resetPosition(0.0)
-      this.odometer.resetPosition(ahrs.heading, leftLeader.position, rightLeader.position, pose)
+      this.poseEstimator.resetPosition(ahrs.heading, leftLeader.position, rightLeader.position, pose)
     }
 
   override fun stop() {
-    set(ChassisSpeeds(.0, .0, .0))
+    this.set(ChassisSpeeds(0.0, 0.0, 0.0))
   }
 
-  /** Periodically update the odometer */
   override fun periodic() {
     val currentTime = Timer.getFPGATimestamp()
 
-    val dt = if (!previousTime.isNaN()) {
-      currentTime - previousTime
-    } else {
-      0.02
-    }
-    val leftVel = wheelSpeeds.leftMetersPerSecond
-    val rightVel = wheelSpeeds.rightMetersPerSecond
-    val prevLeftVel = prevWheelSpeeds.leftMetersPerSecond
-    val prevRightVel = prevWheelSpeeds.rightMetersPerSecond
+    val dt = if (previousTime.isNaN()) 0.02 else currentTime - previousTime
 
-    leftLeader.setVoltage(
-      feedforward.calculate(prevLeftVel, leftVel, dt) + leftPID.calculate(leftLeader.velocity, leftVel)
-    )
-    rightLeader.setVoltage(
-      feedforward.calculate(prevRightVel, rightVel, dt) + rightPID.calculate(rightLeader.velocity, rightVel)
+    leftPID.setpoint = leftVel
+    rightPID.setpoint = rightVel
+
+    /** Calculates the individual side voltages using a [DifferentialDriveFeedforward]. */
+    val sideVoltages = feedForward.calculate(
+      prevLeftVel,
+      leftVel,
+      prevRightVel,
+      rightVel,
+      dt
     )
 
-    this.odometer.update(ahrs.heading, this.leftLeader.position, this.rightLeader.position)
+    leftLeader.setVoltage(sideVoltages.left + leftPID.calculate(prevLeftVel))
+
+    rightLeader.setVoltage(sideVoltages.right + rightPID.calculate(prevRightVel))
+
+    this.poseEstimator.update(ahrs.heading, this.leftLeader.position, this.rightLeader.position)
 
     previousTime = currentTime
   }
 
   companion object {
-    /** Helper to make each side for the differential drive */
+    /** Create a [DifferentialDrive] using [DifferentialConstants]. */
     private fun makeSide(
       name: String,
       motorId: Int,
@@ -129,7 +144,7 @@ open class DifferentialDrive(
       followers: Map<Int, Boolean>
     ) =
       createSparkMax(
-        name = name + "_Drive",
+        name = name + "_Side",
         id = motorId,
         enableBrakeMode = true,
         inverted = inverted,
@@ -170,45 +185,41 @@ open class DifferentialDrive(
           )
         ),
         ahrs,
-        SimpleMotorFeedforward(
-          DifferentialConstants.DRIVE_FF_KS,
-          DifferentialConstants.DRIVE_FF_KV,
-          DifferentialConstants.DRIVE_FF_KA
-        ),
+        DifferentialConstants.DRIVE_FEED_FORWARD,
         {
           PIDController(
-            DifferentialConstants.DRIVE_KP_VEL,
-            DifferentialConstants.DRIVE_KI_VEL,
-            DifferentialConstants.DRIVE_KD_VEL
+            DifferentialConstants.DRIVE_KP,
+            DifferentialConstants.DRIVE_KI,
+            DifferentialConstants.DRIVE_KD
           )
         },
         DifferentialConstants.TRACK_WIDTH
       )
     }
 
-    fun simOf(
-      drive: DifferentialDrive,
-      kV: Double,
-      kA: Double,
-      angleKV: Double,
-      angleKA: Double,
-      wheelRadius: Double
-    ): DifferentialSim {
-      val drivePlant = LinearSystemId.identifyDrivetrainSystem(
-        kV,
-        kA,
-        angleKV,
-        angleKA
-      )
-      val driveSim = DifferentialDrivetrainSim(
-        drivePlant,
-        DCMotor.getNEO(3),
-        DifferentialConstants.DRIVE_GEARING,
-        drive.trackwidth,
-        wheelRadius,
-        VecBuilder.fill(0.001, 0.001, 0.001, 0.1, 0.1, 0.005, 0.005)
-      )
-      return DifferentialSim(driveSim, drive.leftLeader, drive.rightLeader, drive.ahrs, drive.feedforward, drive.makeVelPID, drive.trackwidth)
-    }
+//    fun simOf(
+//      drive: DifferentialDrive,
+//      kV: Double,
+//      kA: Double,
+//      angleKV: Double,
+//      angleKA: Double,
+//      wheelRadius: Double
+//    ): DifferentialSim {
+//      val drivePlant = LinearSystemId.identifyDrivetrainSystem(
+//        kV,
+//        kA,
+//        angleKV,
+//        angleKA
+//      )
+//      val driveSim = DifferentialDrivetrainSim(
+//        drivePlant,
+//        DCMotor.getNEO(3),
+//        DifferentialConstants.DRIVE_GEARING,
+//        drive.trackwidth,
+//        wheelRadius,
+//        VecBuilder.fill(0.001, 0.001, 0.001, 0.1, 0.1, 0.005, 0.005)
+//      )
+//      return DifferentialSim(driveSim, drive.leftLeader, drive.rightLeader, drive.ahrs, drive.feedforward, drive.makeVelPID, drive.trackwidth)
+//    }
   }
 }

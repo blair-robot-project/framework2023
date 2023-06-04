@@ -4,6 +4,7 @@ import edu.wpi.first.math.filter.SlewRateLimiter
 import edu.wpi.first.math.kinematics.ChassisSpeeds
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds
+import edu.wpi.first.wpilibj.drive.DifferentialDrive.WheelSpeeds
 import frc.team449.control.OI
 import frc.team449.robot2023.constants.RobotConstants
 
@@ -35,7 +36,7 @@ object DifferentialOIs {
         rotThrottle(),
         false
       ),
-      drive.kinematics,
+      drive.getKinematics(),
       xRamp,
       rotRamp
     )
@@ -68,7 +69,7 @@ object DifferentialOIs {
         rotThrottle(),
         turnInPlace()
       ),
-      drive.kinematics,
+      drive.getKinematics(),
       xRamp,
       rotRamp
     )
@@ -94,7 +95,7 @@ object DifferentialOIs {
     leftRamp: SlewRateLimiter,
     rightRamp: SlewRateLimiter
   ): OI = OI {
-    drive.kinematics.toChassisSpeeds(
+    drive.getKinematics().toChassisSpeeds(
       DifferentialDriveWheelSpeeds(
         leftRamp.calculate(leftThrottle() * RobotConstants.MAX_LINEAR_SPEED),
         rightRamp.calculate(
@@ -120,7 +121,7 @@ object DifferentialOIs {
    * @param rotRamp Used for limiting rotational acceleration
    */
   private fun scaleAndApplyRamping(
-    wheelThrottles: edu.wpi.first.wpilibj.drive.DifferentialDrive.WheelSpeeds,
+    wheelThrottles: WheelSpeeds,
     kinematics: DifferentialDriveKinematics,
     ramp: SlewRateLimiter,
     rotRamp: SlewRateLimiter

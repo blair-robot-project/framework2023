@@ -20,23 +20,18 @@ import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.hypot
 
-/**
- * Create an OI for controlling a holonomic drivetrain.
- * The x and y axes on one joystick are used to control x and y velocity (m/s),
- * while the x axis on another joystick is used to control rotational velocity (m/s).
- * This OI will also map A, X, B, and Y to 90 degree setpoints.
- * <p> The magnitude of the acceleration is clamped
- * <p>Note that the joystick's X
- * axis corresponds to the robot's/field's Y and vice versa
- *
- * @param drive The drivetrain this OI is controlling
- * @param xThrottle The Y axis of the strafing joystick
- * @param yThrottle The X axis of the strafing joystick
- * @param rotThrottle The X axis of the rotating joystick
- * @param rotRamp Used to ramp angular velocity
- * @param maxAccel Max accel, used for ramping
- * @param fieldOriented Whether the OI x and y translation should
- * be relative to the field rather than relative to the robot. This better be true.
+/** Creates an OI to control a holonomic drivetrain.
+ * The X/Y axes of one stick are used to control X/Y velocity (m/s).
+ * The X axis of the other stick is used to control angular velocity (m/s).
+ * This orthogonal OI will also map the A, X, B, and Y buttons on a joystick to PI/2 * k setpoints.
+ * @param drive The drivetrain that the OI is controlling.
+ * @param xThrottle The Y axis of the strafing joystick.
+ * @param yThrottle The X axis of the strafing joystick.
+ * @param rotThrottle The X axis of the rotating joystick.
+ * @param rotRamp Used to ramp angular velocity.
+ * @param maxAccel Max accel. Used for ramping.
+ * @param fieldOriented Whether the OI X and Y translation should
+ * be relative to the field rather than relative to the robot. This better be true. We are not 1727.
  */
 class OrthogonalHolonomicOI(
   private val drive: HolonomicDrive,

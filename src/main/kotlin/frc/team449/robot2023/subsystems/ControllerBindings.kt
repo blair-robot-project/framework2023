@@ -9,15 +9,11 @@ class ControllerBindings(
   private val robot: Robot
 ) {
 
-  /**
-   * Add controller bindings here.
-   */
+  /** Sets the controls for the robot. */
   fun bindButtons() {
     /** Example:
      * JoystickButton(driveController, XboxController.Button.kLeftBumper.value).onTrue(
-     *       robot.endEffector.runOnce(robot.endEffector::intakeReverse).andThen(
-     *         robot.groundIntake.outtake()
-     *       )
+     *        PrintCommand(" hello! ")
      *     ).onFalse(
      *       robot.endEffector.runOnce(robot.endEffector::stop).andThen(
      *         robot.groundIntake.runOnce(robot.groundIntake::stop)
