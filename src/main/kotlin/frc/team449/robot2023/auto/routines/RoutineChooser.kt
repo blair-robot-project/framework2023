@@ -13,7 +13,8 @@ class RoutineChooser(private val robot: Robot) : SendableChooser<String>() {
       "RedExample1" to Example(robot, PositionChooser.Positions.POSITION1, true).createCommand(),
       "RedExample2" to Example(robot, PositionChooser.Positions.POSITION2, true).createCommand(),
       "BlueExample1" to Example(robot, PositionChooser.Positions.POSITION1, false).createCommand(),
-      "BlueExample2" to Example(robot, PositionChooser.Positions.POSITION2, false).createCommand()
+      "BlueExample2" to Example(robot, PositionChooser.Positions.POSITION2, false).createCommand(),
+      "Nothing" to DoNothing(robot).createCommand()
     )
   }
 
@@ -23,7 +24,7 @@ class RoutineChooser(private val robot: Robot) : SendableChooser<String>() {
 
   fun updateOptions(position: PositionChooser.Positions, isRed: Boolean) {
     /** Add auto options here */
-    this.setDefaultOption("Do Nothing", "DropCone")
+    this.setDefaultOption("Do Nothing", "Nothing")
 
     this.addOption(
       "Example Auto",

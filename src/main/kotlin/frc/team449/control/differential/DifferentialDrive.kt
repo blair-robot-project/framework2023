@@ -1,19 +1,13 @@
 package frc.team449.control.differential
 
-import edu.wpi.first.math.VecBuilder
 import edu.wpi.first.math.controller.DifferentialDriveFeedforward
 import edu.wpi.first.math.controller.PIDController
-import edu.wpi.first.math.controller.SimpleMotorFeedforward
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator
 import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.kinematics.ChassisSpeeds
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics
-import edu.wpi.first.math.kinematics.DifferentialDriveOdometry
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds
-import edu.wpi.first.math.system.plant.DCMotor
-import edu.wpi.first.math.system.plant.LinearSystemId
 import edu.wpi.first.wpilibj.Timer
-import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import frc.team449.control.DriveSubsystem
 import frc.team449.robot2023.constants.RobotConstants
@@ -50,7 +44,7 @@ open class DifferentialDrive(
   /** Kinematics used to convert [ChassisSpeeds] to [DifferentialDriveWheelSpeeds] */
   private val kinematics = DifferentialDriveKinematics(trackwidth)
 
-  fun getKinematics(): DifferentialDriveKinematics {return kinematics}
+  fun getKinematics(): DifferentialDriveKinematics { return kinematics }
 
   /** Pose estimator that estimates the robot's position as a [Pose2d]. */
   val poseEstimator = DifferentialDrivePoseEstimator(
@@ -77,7 +71,6 @@ open class DifferentialDrive(
   private var prevRightVel = 0.0
   private var leftVel = 0.0
   private var rightVel = 0.0
-
 
   /** Calculate left and right side speeds from given [ChassisSpeeds]. */
   override fun set(desiredSpeeds: ChassisSpeeds) {

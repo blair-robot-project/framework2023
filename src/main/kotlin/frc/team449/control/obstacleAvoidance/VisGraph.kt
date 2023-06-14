@@ -1,7 +1,7 @@
 package frc.team449.control.obstacleAvoidance
 
 import java.awt.geom.Line2D
-import java.util.Collections
+import kotlin.math.hypot
 
 class VisGraph {
   // A class representing the navigation mesh
@@ -124,14 +124,14 @@ class VisGraph {
 
   // Reconstruct the path from the start node to the goal node
   private fun reconstructPath(cameFrom: Map<Node?, Node?>, current: Node?): List<Node?> {
-    var current = current
+    var cNode = current
     val path: MutableList<Node?> = ArrayList()
-    path.add(current)
-    while (cameFrom.containsKey(current)) {
-      current = cameFrom[current]
-      path.add(current)
+    path.add(cNode)
+    while (cameFrom.containsKey(cNode)) {
+      cNode = cameFrom[cNode]
+      path.add(cNode)
     }
-    Collections.reverse(path)
+    path.reverse()
     return path
   }
 
@@ -140,7 +140,7 @@ class VisGraph {
     private fun distance(n1: Node?, n2: Node): Double {
       val dx = n1!!.x - n2.x
       val dy = n1.y - n2.y
-      return Math.hypot(dx, dy)
+      return hypot(dx, dy)
     }
   }
 }

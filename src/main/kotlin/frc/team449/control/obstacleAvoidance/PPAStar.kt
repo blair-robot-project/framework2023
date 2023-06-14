@@ -109,7 +109,7 @@ class PPAStar(
           PathPoint(
             Translation2d(startPoint!!.x, startPoint!!.y),
             heading,
-            startPoint!!.holRot,
+            finalPosition.holRot,
             startingSpeed
           )
         )
@@ -135,7 +135,7 @@ class PPAStar(
           PathPoint(
             Translation2d(fullPath[i]!!.x, fullPath[i]!!.y),
             heading,
-            null
+            finalPosition.holRot
           )
         )
         addMidPoints(fullPathPoints, fullPath, i)
@@ -146,7 +146,7 @@ class PPAStar(
     // specified in constructor.
     fullPathPoints.forEach {
       println(it.position)
-      println(it.nextControlLength)
+      println(it.holonomicRotation)
     }
     trajectory = PathPlanner.generatePath(constraints, fullPathPoints)
     // Display Trajectory
@@ -156,7 +156,8 @@ class PPAStar(
     ) { RobotConstants.ALLIANCE_COLOR == Alliance.Red }[0]
     pathDrivingCommand = HolonomicFollower(
       drive,
-      trajectory
+      trajectory,
+      poseTol = Pose2d(0.02, 0.02, Rotation2d.fromDegrees(2.0))
     )
     pathDrivingCommand!!.schedule()
 
@@ -182,7 +183,7 @@ class PPAStar(
     )
 
     // Adjust distance / x to have more or less midpoints lower the x the more midpoints
-    val midpoints = floor(distance / 1.0).toInt()
+    val midpoints = floor(distance / 1.45).toInt()
     val heading = Rotation2d(
       fullPath[i + 1]!!.x - fullPath[i]!!.x,
       fullPath[i + 1]!!.y - fullPath[i]!!.y
@@ -199,7 +200,7 @@ class PPAStar(
               )
           ),
           heading,
-          null
+          finalPosition.holRot
         )
       )
     }

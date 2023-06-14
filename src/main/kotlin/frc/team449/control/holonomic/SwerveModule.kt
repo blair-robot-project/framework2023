@@ -99,7 +99,7 @@ open class SwerveModule(
     )
     turningMotor.set(turnPid)
   }
-  
+
   companion object {
     /** Create a real or simulated [SwerveModule] based on the simulation status of the robot. */
     fun create(
