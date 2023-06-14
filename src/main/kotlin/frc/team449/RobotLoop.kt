@@ -1,9 +1,6 @@
 package frc.team449
 
-import com.pathplanner.lib.PathConstraints
 import com.pathplanner.lib.server.PathPlannerServer
-import edu.wpi.first.math.geometry.Pose2d
-import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.RobotBase
 import edu.wpi.first.wpilibj.TimedRobot
@@ -11,17 +8,19 @@ import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.CommandScheduler
+import edu.wpi.first.wpilibj2.command.InstantCommand
 import frc.team449.control.DriveCommand
-import frc.team449.control.obstacleAvoidance.*
 import frc.team449.robot2023.Robot
 import frc.team449.robot2023.auto.Paths
 import frc.team449.robot2023.auto.PositionChooser
 import frc.team449.robot2023.auto.routines.RoutineChooser
-import frc.team449.robot2023.commands.light.Rainbow
+import frc.team449.robot2023.commands.ArmCalibration
+import frc.team449.robot2023.commands.light.BlairAnimation
 import frc.team449.robot2023.constants.RobotConstants
-import frc.team449.robot2023.constants.drives.SwerveConstants
+import frc.team449.robot2023.constants.subsystem.ArmConstants
 import frc.team449.robot2023.constants.vision.VisionConstants
 import frc.team449.robot2023.subsystems.ControllerBindings
+import frc.team449.robot2023.subsystems.arm.ArmPaths
 import io.github.oblarg.oblog.Logger
 
 /** The main class of the robot, constructs all the subsystems and initializes default commands. */
@@ -45,11 +44,17 @@ class RobotLoop : TimedRobot() {
 //      instance.startClient4("localhost")
     }
 
+    println("Parsing Trajectories : ${Timer.getFPGATimestamp()}")
+    ArmPaths.parseTrajectories()
+    println("DONE Parsing Trajectories : ${Timer.getFPGATimestamp()}")
+
     println("Generating Auto Routines : ${Timer.getFPGATimestamp()}")
     routineMap = routineChooser.routineMap()
     println("DONE Generating Auto Routines : ${Timer.getFPGATimestamp()}")
 
     PathPlannerServer.startServer(5811)
+
+    ArmCalibration(robot.arm).ignoringDisable(true).schedule()
 
     Logger.configureLoggingAndConfig(robot, false)
     Logger.configureLoggingAndConfig(Paths, false)
@@ -57,21 +62,34 @@ class RobotLoop : TimedRobot() {
     SmartDashboard.putData("Position Chooser", positionChooser)
     SmartDashboard.putData("Routine Chooser", routineChooser)
     SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance())
+    SmartDashboard.putData("Arm Subsystem", robot.arm)
+    SmartDashboard.putData("Ground Intake Subsystem", robot.groundIntake)
+    SmartDashboard.putData("End Effector Subsystem", robot.endEffector)
 
     ControllerBindings(robot.driveController, robot.mechanismController, robot).bindButtons()
+    robot.arm.defaultCommand = InstantCommand(
+      robot.arm::holdArm,
+      robot.arm
+    )
 
-    robot.light.defaultCommand = Rainbow(robot.light)
+//    robot.light.defaultCommand = BlairAnimation(robot.light)
   }
 
   override fun robotPeriodic() {
     CommandScheduler.getInstance().run()
 
     Logger.updateEntries()
+
+    robot.field.robotPose = robot.drive.pose
   }
 
   override fun autonomousInit() {
     VisionConstants.MAX_DISTANCE_SINGLE_TAG = VisionConstants.AUTO_MAX_DISTANCE_SINGLE_TAG
     VisionConstants.MAX_DISTANCE_MULTI_TAG = VisionConstants.AUTO_MAX_DISTANCE_MULTI_TAG
+
+    robot.arm.controller.reset()
+
+    robot.arm.setArmDesiredState(ArmConstants.STOW)
 
     /** At the start of auto we poll the alliance color given by the FMS */
     RobotConstants.ALLIANCE_COLOR = DriverStation.getAlliance()
@@ -79,20 +97,7 @@ class RobotLoop : TimedRobot() {
     routineChooser.updateOptions(positionChooser.selected, RobotConstants.ALLIANCE_COLOR == DriverStation.Alliance.Red)
 
     /** Every time auto starts, we update the chosen auto command */
-//    this.autoCommand = routineMap[routineChooser.selected]
-
-    val standardMap = VisGraph()
-
-    MapCreator().createGraph(standardMap, FieldConstants.shortObstacles)
-
-    this.autoCommand = PPAStar(
-      robot.drive,
-      PathConstraints(4.5, 8.0),
-      Node(Pose2d(2.0, 2.0, Rotation2d(0.0))),
-      FieldConstants.shortObstacles,
-      standardMap,
-      robot.field
-    )
+    this.autoCommand = routineMap[routineChooser.selected]
     CommandScheduler.getInstance().schedule(this.autoCommand)
   }
 
@@ -102,6 +107,7 @@ class RobotLoop : TimedRobot() {
     VisionConstants.MAX_DISTANCE_SINGLE_TAG = VisionConstants.TELEOP_MAX_DISTANCE_SINGLE_TAG
     VisionConstants.MAX_DISTANCE_MULTI_TAG = VisionConstants.TELEOP_MAX_DISTANCE_MULTI_TAG
 
+    robot.arm.controller.reset()
     if (autoCommand != null) {
       CommandScheduler.getInstance().cancel(autoCommand)
     }
@@ -116,9 +122,12 @@ class RobotLoop : TimedRobot() {
   }
 
   override fun disabledPeriodic() {
+    robot.arm.controller.reset()
   }
 
   override fun testInit() {
+    robot.arm.controller.reset()
+
     if (autoCommand != null) {
       CommandScheduler.getInstance().cancel(autoCommand)
     }

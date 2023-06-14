@@ -48,9 +48,7 @@ open class DifferentialDrive(
   }
 
   /** Kinematics used to convert [ChassisSpeeds] to [DifferentialDriveWheelSpeeds] */
-  private val kinematics = DifferentialDriveKinematics(trackwidth)
-
-  fun getKinematics(): DifferentialDriveKinematics {return kinematics}
+  val kinematics =  DifferentialDriveKinematics(trackwidth)
 
   /** Pose estimator that estimates the robot's position as a [Pose2d]. */
   val poseEstimator = DifferentialDrivePoseEstimator(

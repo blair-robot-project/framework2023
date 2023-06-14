@@ -14,8 +14,9 @@ import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.ConditionalCommand
 import frc.team449.control.auto.HolonomicFollower
 import frc.team449.robot2023.Robot
-import frc.team449.robot2023.auto.AutoConstants
+import frc.team449.robot2023.constants.auto.AutoConstants
 import frc.team449.robot2023.constants.RobotConstants
+import frc.team449.robot2023.constants.field.FieldConstants
 import java.util.function.BooleanSupplier
 import kotlin.math.PI
 import kotlin.math.pow
@@ -66,7 +67,7 @@ class DoubleAlign {
         ySpeedMax = 0.0
       }
     } else {
-      alliancePoint = Translation2d(AutoConstants.FIELD_LENGTH - point.x, point.y)
+      alliancePoint = Translation2d(FieldConstants.fieldLength - point.x, point.y)
       endHeading = Rotation2d(PI)
       endRotation = Rotation2d()
       xSpeedMin = 0.0

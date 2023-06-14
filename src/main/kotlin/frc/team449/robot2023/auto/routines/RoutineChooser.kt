@@ -10,37 +10,134 @@ class RoutineChooser(private val robot: Robot) : SendableChooser<String>() {
 
   fun routineMap(): HashMap<String, Command> {
     return hashMapOf(
-      "RedExample1" to Example(robot, PositionChooser.Positions.POSITION1, true).createCommand(),
-      "RedExample2" to Example(robot, PositionChooser.Positions.POSITION2, true).createCommand(),
-      "BlueExample1" to Example(robot, PositionChooser.Positions.POSITION1, false).createCommand(),
-      "BlueExample2" to Example(robot, PositionChooser.Positions.POSITION2, false).createCommand()
+      "RedFarConeCube" to EdgeConeCube(robot, PositionChooser.Positions.FARCONE, true).createCommand(robot),
+      "RedWallConeCube" to EdgeConeCube(robot, PositionChooser.Positions.WALLCONE, true).createCommand(robot),
+      "RedFarCubeCone" to EdgeCubeCone(robot, PositionChooser.Positions.FARCUBE, true).createCommand(robot),
+      "RedWallCubeCone" to EdgeCubeCone(robot, PositionChooser.Positions.WALLCUBE, true).createCommand(robot),
+      "RedCenterCubeBalance" to CenterCubeStation(robot, true).createCommand(robot),
+      "RedFarConeCubeCube" to EdgeConeCubeCube(robot, PositionChooser.Positions.FARCONE, true).createCommand(robot),
+      "RedWallConeCubeCube" to EdgeConeCubeCube(robot, PositionChooser.Positions.WALLCONE, true).createCommand(robot),
+      "BlueFarConeCube" to EdgeConeCube(robot, PositionChooser.Positions.FARCONE, false).createCommand(robot),
+      "BlueWallConeCube" to EdgeConeCube(robot, PositionChooser.Positions.WALLCONE, false).createCommand(robot),
+      "BlueFarCubeCone" to EdgeCubeCone(robot, PositionChooser.Positions.FARCUBE, false).createCommand(robot),
+      "BlueWallCubeCone" to EdgeCubeCone(robot, PositionChooser.Positions.WALLCUBE, false).createCommand(robot),
+      "BlueCenterCubeBalance" to CenterCubeStation(robot, false).createCommand(robot),
+      "BlueFarConeCubeCube" to EdgeConeCubeCube(robot, PositionChooser.Positions.FARCONE, false).createCommand(robot),
+      "BlueWallConeCubeCube" to EdgeConeCubeCube(robot, PositionChooser.Positions.WALLCONE, false).createCommand(robot),
+      "DropCone" to DropCone(robot).createCommand(robot)
     )
   }
 
   init {
-    updateOptions(PositionChooser.Positions.POSITION1, DriverStation.getAlliance() == DriverStation.Alliance.Red)
+    updateOptions(PositionChooser.Positions.CENTER, DriverStation.getAlliance() == DriverStation.Alliance.Red)
   }
 
   fun updateOptions(position: PositionChooser.Positions, isRed: Boolean) {
     /** Add auto options here */
-    this.setDefaultOption("Do Nothing", "DropCone")
+    this.setDefaultOption("Drop Piece", "DropCone")
 
     this.addOption(
-      "Example Auto",
+      "2 Piece (Edges only)",
       if (isRed) {
         when (position) {
-          PositionChooser.Positions.POSITION1 -> {
-            "RedExample1"
-          } else -> {
-            "RedExample2"
+          PositionChooser.Positions.FARCONE -> {
+            "RedFarConeCube"
+          }
+
+          PositionChooser.Positions.WALLCONE -> {
+            "RedWallConeCube"
+          }
+
+          PositionChooser.Positions.FARCUBE -> {
+            "RedFarCubeCone"
+          }
+
+          PositionChooser.Positions.WALLCUBE -> {
+            "RedWallCubeCone"
+          }
+
+          else -> {
+            "DropCone"
           }
         }
       } else {
         when (position) {
-          PositionChooser.Positions.POSITION1 -> {
-            "BlueExample1"
-          } else -> {
-            "BlueExample2"
+          PositionChooser.Positions.FARCONE -> {
+            "BlueFarConeCube"
+          }
+
+          PositionChooser.Positions.WALLCONE -> {
+            "BlueWallConeCube"
+          }
+
+          PositionChooser.Positions.FARCUBE -> {
+            "BlueFarCubeCone"
+          }
+
+          PositionChooser.Positions.WALLCUBE -> {
+            "BlueWallCubeCone"
+          }
+
+          else -> {
+            "DropCone"
+          }
+        }
+      }
+    )
+
+    this.addOption(
+      "1 Piece and Balance",
+      if (isRed) {
+        when (position) {
+          PositionChooser.Positions.CENTER -> {
+            "RedCenterCubeBalance"
+          }
+
+          else -> {
+            "DropCone"
+          }
+        }
+      } else {
+        when (position) {
+          PositionChooser.Positions.CENTER -> {
+            "BlueCenterCubeBalance"
+          }
+
+          else -> {
+            "DropCone"
+          }
+        }
+      }
+    )
+
+    this.addOption(
+      "3 Piece (Starting Edge Cone Only)",
+      if (isRed) {
+        when (position) {
+          PositionChooser.Positions.FARCONE -> {
+            "RedFarConeCubeCube"
+          }
+
+          PositionChooser.Positions.WALLCONE -> {
+            "RedWallConeCubeCube"
+          }
+
+          else -> {
+            "DropCone"
+          }
+        }
+      } else {
+        when (position) {
+          PositionChooser.Positions.FARCONE -> {
+            "BlueFarConeCubeCube"
+          }
+
+          PositionChooser.Positions.WALLCONE -> {
+            "BlueWallConeCubeCube"
+          }
+
+          else -> {
+            "DropCone"
           }
         }
       }

@@ -7,7 +7,7 @@ import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.wpilibj2.command.*
 import frc.team449.control.holonomic.HolonomicDrive
-import frc.team449.robot2023.auto.AutoConstants
+import frc.team449.robot2023.constants.auto.AutoConstants
 import io.github.oblarg.oblog.annotations.Config
 import kotlin.math.abs
 
@@ -23,16 +23,16 @@ import kotlin.math.abs
  * @param timeout Maximum time in seconds for the path follower to correct itself after EACH trajectory is done
  */
 class HolonomicRoutine(
-  @field:Config.PIDController(name = "X PID") var xController: PIDController = PIDController(AutoConstants.DEFAULT_X_KP, 0.0, 0.0),
-  @field:Config.PIDController(name = "Y PID") var yController: PIDController = PIDController(AutoConstants.DEFAULT_Y_KP, 0.0, 0.0),
-  @field:Config.PIDController(name = "Rotation PID") var thetaController: PIDController = PIDController(AutoConstants.DEFAULT_ROTATION_KP, 0.0, 0.0),
-  private val drive: HolonomicDrive,
-  private val eventMap: HashMap<String, Command>,
-  private val translationTol: Double = 0.05,
-  private val thetaTol: Double = 0.05,
-  private val resetPosition: Boolean = false,
-  private val resetPositionTolerance: Pose2d = Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0.0)),
-  private val timeout: Double = 0.65
+    @field:Config.PIDController(name = "X PID") var xController: PIDController = PIDController(AutoConstants.DEFAULT_X_KP, 0.0, 0.0),
+    @field:Config.PIDController(name = "Y PID") var yController: PIDController = PIDController(AutoConstants.DEFAULT_Y_KP, 0.0, 0.0),
+    @field:Config.PIDController(name = "Rotation PID") var thetaController: PIDController = PIDController(AutoConstants.DEFAULT_ROTATION_KP, 0.0, 0.0),
+    private val drive: HolonomicDrive,
+    private val eventMap: HashMap<String, Command>,
+    private val translationTol: Double = 0.05,
+    private val thetaTol: Double = 0.05,
+    private val resetPosition: Boolean = false,
+    private val resetPositionTolerance: Pose2d = Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0.0)),
+    private val timeout: Double = 0.65
 ) : BaseAutoBuilder(drive::pose, eventMap, DrivetrainType.HOLONOMIC) {
 
   /** What command you want to use to follow a given trajectory */

@@ -1,7 +1,7 @@
 package frc.team449.control.obstacleAvoidance
 
 class MapCreator {
-  fun createGraph(aStarMap: VisGraph, obstacles: List<Obstacle>) {
+  fun createGraph(aStarMap: VisGraph, obstacles: List<Obstacle>): VisGraph {
     aStarMap.addNode(Node(2.40 - 0.1, 4.75))
     aStarMap.addNode(Node(5.40 + 0.1, 4.75))
     aStarMap.addNode(Node(5.40 + 0.1, 0.75))
@@ -14,5 +14,7 @@ class MapCreator {
         aStarMap.addEdge(Edge(startNode, aStarMap.getNode(j)), obstacles)
       }
     }
+
+    return aStarMap
   }
 }

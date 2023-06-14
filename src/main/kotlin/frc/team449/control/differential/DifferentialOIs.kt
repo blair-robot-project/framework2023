@@ -36,7 +36,7 @@ object DifferentialOIs {
         rotThrottle(),
         false
       ),
-      drive.getKinematics(),
+      drive.kinematics,
       xRamp,
       rotRamp
     )
@@ -69,7 +69,7 @@ object DifferentialOIs {
         rotThrottle(),
         turnInPlace()
       ),
-      drive.getKinematics(),
+      drive.kinematics,
       xRamp,
       rotRamp
     )
@@ -95,7 +95,7 @@ object DifferentialOIs {
     leftRamp: SlewRateLimiter,
     rightRamp: SlewRateLimiter
   ): OI = OI {
-    drive.getKinematics().toChassisSpeeds(
+    drive.kinematics.toChassisSpeeds(
       DifferentialDriveWheelSpeeds(
         leftRamp.calculate(leftThrottle() * RobotConstants.MAX_LINEAR_SPEED),
         rightRamp.calculate(

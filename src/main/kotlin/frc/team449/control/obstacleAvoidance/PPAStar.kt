@@ -16,26 +16,30 @@ import frc.team449.control.auto.HolonomicFollower
 import frc.team449.control.holonomic.SwerveDrive
 import frc.team449.robot2023.auto.AutoUtil
 import frc.team449.robot2023.constants.RobotConstants
+import frc.team449.robot2023.constants.field.FieldConstants
 import kotlin.math.PI
 import kotlin.math.floor
 import kotlin.math.hypot
 
 class PPAStar(
   private val drive: SwerveDrive,
-  private val constraints: PathConstraints,
-  private val finalPosition: Node,
-  private val obstacles: List<Obstacle>,
-  private val aStarMap: VisGraph,
+  private val constraints: PathConstraints = PathConstraints(4.0, 5.5),
+  finalPosition: Pose2d,
+  private val obstacles: List<Obstacle> = FieldConstants.obstacles,
+  private val aStarMap: VisGraph = MapCreator().createGraph(VisGraph(), FieldConstants.obstacles),
   private val field: Field2d
 ) : CommandBase() {
+
   private var pathDrivingCommand: Command? = null
   private var startPoint: Node? = null
 
+  private val finalNode = Node(finalPosition)
+
   init {
-    aStarMap.addNode(finalPosition)
+    aStarMap.addNode(finalNode)
     for (i in 0 until aStarMap.nodeSize) {
       val endNode = aStarMap.getNode(i)
-      aStarMap.addEdge(Edge(finalPosition, endNode), obstacles)
+      aStarMap.addEdge(Edge(finalNode, endNode), obstacles)
     }
     addRequirements(drive)
   }
@@ -52,7 +56,7 @@ class PPAStar(
       Node(drive.pose)
     } else {
       val blueStart = Pose2d(
-        FieldConstants.FIELD_LENGTH_METERS - drive.pose.x,
+        FieldConstants.fieldLength - drive.pose.x,
         drive.pose.y,
         drive.heading.plus(Rotation2d(PI))
       )
@@ -76,7 +80,7 @@ class PPAStar(
       aStarMap.addEdge(Edge(startPoint!!, endNode), obstacles)
     }
     // Finds the path using A*
-    val fullPath: List<Node?> = aStarMap.findPath(startPoint, finalPosition) ?: return
+    val fullPath: List<Node?> = aStarMap.findPath(startPoint, finalNode) ?: return
 
     // Returns if no path is found
 
@@ -121,9 +125,9 @@ class PPAStar(
         )
         fullPathPoints.add(
           PathPoint(
-            Translation2d(finalPosition.x, finalPosition.y),
+            Translation2d(finalNode.x, finalNode.y),
             heading,
-            finalPosition.holRot
+            finalNode.holRot
           )
         )
       } else {

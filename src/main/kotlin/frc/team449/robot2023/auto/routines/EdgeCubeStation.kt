@@ -7,8 +7,9 @@ import frc.team449.robot2023.Robot
 import frc.team449.robot2023.auto.AutoUtil
 import frc.team449.robot2023.auto.Paths
 import frc.team449.robot2023.auto.PositionChooser
+import frc.team449.robot2023.commands.autoBalance.AutoBalance
 
-class Example(
+class EdgeCubeStation(
   robot: Robot,
   position: PositionChooser.Positions,
   isRed: Boolean
@@ -18,14 +19,17 @@ class Example(
     HolonomicRoutine(
       drive = robot.drive,
       eventMap = hashMapOf(
-        /** Add event markers here */
+        "dropCube" to AutoUtil.stowDropCube(robot),
+        "stowArm" to AutoUtil.deployCone(robot),
+        "stopIntake" to AutoUtil.retractAndStow(robot),
+        "balanceStation" to AutoBalance.create(robot.drive)
       )
     )
 
   override val trajectory: MutableList<PathPlannerTrajectory> =
-    if (position == PositionChooser.Positions.POSITION1) {
-      if (isRed) AutoUtil.transformForAlliance(Paths.POS1.EXAMPLE) { true } else Paths.POS1.EXAMPLE
+    if (position == PositionChooser.Positions.FARCUBE) {
+      if (isRed) AutoUtil.transformForAlliance(Paths.FAR.CUBESTATION) { true } else Paths.FAR.CUBESTATION
     } else {
-      if (isRed) AutoUtil.transformForAlliance(Paths.POS2.EXAMPLE) { true } else Paths.POS2.EXAMPLE
+      if (isRed) AutoUtil.transformForAlliance(Paths.WALL.CUBESTATION) { true } else Paths.WALL.CUBESTATION
     }
 }
