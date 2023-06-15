@@ -10,7 +10,7 @@ object FieldConstants {
   const val fieldLength = 16.54
   const val fieldWidth = 8.02
 
-  const val inCommunity = 2.5
+  val withinNode = Pose2d(2.5, 2.5, Rotation2d.fromDegrees(90.0))
 
   var obstacles = listOf( // Charging Station
     Obstacle(

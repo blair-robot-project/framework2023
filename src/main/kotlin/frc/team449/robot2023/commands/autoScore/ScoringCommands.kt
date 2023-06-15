@@ -6,7 +6,6 @@ import frc.team449.control.obstacleAvoidance.PPAStar
 import frc.team449.robot2023.Robot
 import frc.team449.robot2023.constants.field.FieldConstants
 import frc.team449.robot2023.constants.subsystem.ArmConstants
-import frc.team449.robot2023.subsystems.arm.control.ArmFollower
 import frc.team449.robot2023.subsystems.arm.control.ArmState
 import kotlin.math.abs
 
@@ -41,8 +40,7 @@ class ScoringCommands(
         finalPosition = finalPos,
         field = robot.field
       ).createCommand() ?: PrintCommand("COULD NOT GENERATE ON THE FLY TRAJECTORY!!!"),
-      PrintCommand(robot.field.robotPose.toString()).repeatedly(),
-      ArmFollower(robot.arm) { robot.arm.chooseTraj(ArmConstants.BACK) }
+      moveArmNearNode(robot, finalPos, levelsToArm[level] ?: ArmConstants.BACK)
     )
   }
 

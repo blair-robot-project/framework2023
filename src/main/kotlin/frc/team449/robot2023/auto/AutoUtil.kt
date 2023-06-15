@@ -6,6 +6,8 @@ import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj2.command.*
 import frc.team449.robot2023.Robot
+import frc.team449.robot2023.constants.auto.AutoConstants
+import frc.team449.robot2023.constants.field.FieldConstants
 import frc.team449.robot2023.constants.subsystem.ArmConstants
 import frc.team449.robot2023.subsystems.arm.ArmPaths
 import frc.team449.robot2023.subsystems.arm.control.ArmFollower
@@ -51,8 +53,8 @@ object AutoUtil {
         for (s in correctedPathGroup[index].states) {
           s as PathPlannerTrajectory.PathPlannerState
           s.poseMeters = Pose2d(
-            AutoConstants.FIELD_LENGTH - s.poseMeters.x,
-            AutoConstants.FIELD_WIDTH - s.poseMeters.y,
+            FieldConstants.fieldLength - s.poseMeters.x,
+            FieldConstants.fieldWidth - s.poseMeters.y,
             s.poseMeters.rotation.plus(Rotation2d(PI))
           )
           s.holonomicRotation = s.holonomicRotation.plus(Rotation2d(PI))
