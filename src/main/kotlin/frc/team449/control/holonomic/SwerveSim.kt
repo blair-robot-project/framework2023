@@ -5,7 +5,6 @@ import edu.wpi.first.wpilibj.Timer.getFPGATimestamp
 import edu.wpi.first.wpilibj.smartdashboard.Field2d
 import frc.team449.control.VisionEstimator
 import frc.team449.system.AHRS
-import java.lang.reflect.Field
 
 class SwerveSim(
   modules: List<SwerveModule>,

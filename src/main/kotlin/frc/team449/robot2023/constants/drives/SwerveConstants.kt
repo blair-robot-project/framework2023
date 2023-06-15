@@ -35,9 +35,9 @@ object SwerveConstants {
   const val TURN_KD = 0.0
 
   /** Feed forward values for driving each module */
-  const val DRIVE_KS = 0.1856
-  const val DRIVE_KV = 2.6088
-  const val DRIVE_KA = 0.34447
+  const val DRIVE_KS = 0.18183
+  const val DRIVE_KV = 2.6237
+  const val DRIVE_KA = 0.42824
 
   /** PID gains for driving each module*/
   const val DRIVE_KP = 0.4
@@ -52,8 +52,8 @@ object SwerveConstants {
   const val DRIVE_CURRENT_LIM = 50
   const val STEERING_CURRENT_LIM = 50
 
-  /** Wheelbase = wheel-to-wheel distance from the side of the robot */
-  /** Trackwidth = wheel-to-wheel distance from the front/back of the robot */
-  val WHEELBASE = Units.inchesToMeters(30.0) // ex. FL to BL
-  val TRACKWIDTH = Units.inchesToMeters(27.00) // ex. BL to BR
+  /** Wheelbase = wheel-to-wheel distance from front to back of the robot */
+  /** Trackwidth = wheel-to-wheel distance from side to side of the robot */
+  val WHEELBASE = Units.inchesToMeters(24.75) // ex. FL to BL
+  val TRACKWIDTH = Units.inchesToMeters(21.75) // ex. BL to BR
 }

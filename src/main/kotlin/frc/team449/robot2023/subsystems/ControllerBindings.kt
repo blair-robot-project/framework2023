@@ -166,12 +166,14 @@ class ControllerBindings(
 //    )
 
     JoystickButton(mechanismController, XboxController.Button.kX.value).onTrue(
-      autoScorer.generateCommand(FieldConstants.TargetPosition.Position4, ScoringCommands.Levels.MID)
+      InstantCommand({
+        autoScorer.generateCommand(FieldConstants.TargetPosition.Position4, ScoringCommands.Levels.HIGH).schedule()
+      })
 //      ArmFollower(robot.arm) { robot.arm.chooseTraj(ArmConstants.MID) }.withInterruptBehavior(kCancelIncoming)
     )
 
     JoystickButton(mechanismController, XboxController.Button.kY.value).onTrue(
-      autoScorer.generateCommand(FieldConstants.TargetPosition.Position5, ScoringCommands.Levels.HIGH)
+      InstantCommand()
 //      ArmFollower(robot.arm) { robot.arm.chooseTraj(ArmConstants.HIGH) }.withInterruptBehavior(kCancelIncoming)
     )
 

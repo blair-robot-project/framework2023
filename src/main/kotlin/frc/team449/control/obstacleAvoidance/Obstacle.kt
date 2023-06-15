@@ -13,7 +13,7 @@ class Obstacle(xPoints: DoubleArray, yPoints: DoubleArray) {
 
   fun addNodes(nodes: VisGraph) {
     for (i in 0 until polygon.npoints) {
-      nodes.addNode(Node(polygon.xpoints.get(i), polygon.ypoints.get(i)))
+      nodes.addNode(Node(polygon.xpoints[i], polygon.ypoints[i]))
     }
   }
 

@@ -24,16 +24,19 @@ import java.util.function.Supplier
  * @param maxSpeeds Maximum speeds and acceleration to run the path at
  */
 class TrajectoryPoseAlign(
-    private val drive: HolonomicDrive,
-    private val currPose: Supplier<Pose2d>,
-    private val targetPose: Pose2d,
-    @field:Config.PIDController(name = "Pose Align X PID") var xController: PIDController = PIDController(AutoConstants.DEFAULT_X_KP, 0.0, 0.0),
-    @field:Config.PIDController(name = "Pose Align Y PID") var yController: PIDController = PIDController(AutoConstants.DEFAULT_Y_KP, 0.0, 0.0),
-    @field:Config.PIDController(name = "Pose Align Rotation PID") var thetaController: PIDController = PIDController(
-        AutoConstants.DEFAULT_ROTATION_KP, 0.0, 0.0),
-    private val poseTolerance: Pose2d = Pose2d(0.05, 0.05, Rotation2d(0.05)),
-    private val timeout: Double = 0.75,
-    private val maxSpeeds: PathConstraints = PathConstraints(3.0, 1.5)
+  private val drive: HolonomicDrive,
+  private val currPose: Supplier<Pose2d>,
+  private val targetPose: Pose2d,
+  @field:Config.PIDController(name = "Pose Align X PID") var xController: PIDController = PIDController(AutoConstants.DEFAULT_X_KP, 0.0, 0.0),
+  @field:Config.PIDController(name = "Pose Align Y PID") var yController: PIDController = PIDController(AutoConstants.DEFAULT_Y_KP, 0.0, 0.0),
+  @field:Config.PIDController(name = "Pose Align Rotation PID") var thetaController: PIDController = PIDController(
+    AutoConstants.DEFAULT_ROTATION_KP,
+    0.0,
+    0.0
+  ),
+  private val poseTolerance: Pose2d = Pose2d(0.05, 0.05, Rotation2d(0.05)),
+  private val timeout: Double = 0.75,
+  private val maxSpeeds: PathConstraints = PathConstraints(3.0, 1.5)
 ) {
 
   fun generateCommand(): Command {

@@ -11,24 +11,21 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds
 import edu.wpi.first.wpilibj.DriverStation.Alliance
 import edu.wpi.first.wpilibj.smartdashboard.Field2d
 import edu.wpi.first.wpilibj2.command.Command
-import edu.wpi.first.wpilibj2.command.CommandBase
 import frc.team449.control.auto.HolonomicFollower
 import frc.team449.control.holonomic.SwerveDrive
 import frc.team449.robot2023.auto.AutoUtil
 import frc.team449.robot2023.constants.RobotConstants
 import frc.team449.robot2023.constants.field.FieldConstants
-import kotlin.math.PI
-import kotlin.math.floor
-import kotlin.math.hypot
+import kotlin.math.*
 
 class PPAStar(
   private val drive: SwerveDrive,
-  private val constraints: PathConstraints = PathConstraints(4.0, 5.5),
-  finalPosition: Pose2d,
+  private val constraints: PathConstraints = PathConstraints(4.0, 5.25),
+  private val finalPosition: Pose2d,
   private val obstacles: List<Obstacle> = FieldConstants.obstacles,
   private val aStarMap: VisGraph = MapCreator().createGraph(VisGraph(), FieldConstants.obstacles),
   private val field: Field2d
-) : CommandBase() {
+) {
 
   private var pathDrivingCommand: Command? = null
   private var startPoint: Node? = null
@@ -41,12 +38,9 @@ class PPAStar(
       val endNode = aStarMap.getNode(i)
       aStarMap.addEdge(Edge(finalNode, endNode), obstacles)
     }
-    addRequirements(drive)
   }
 
-  // ----------------------------------------------------------------------------
-  // Pre-schedule setup code.
-  override fun initialize() {
+  fun createCommand(): Command? {
     /*
      * Add starting position to map
      */
@@ -69,27 +63,46 @@ class PPAStar(
     // Adds start point (current position on the field)
     startPoint?.let { aStarMap.addNode(it) }
 
-    /*
-     * START OF FINDING PATH
-     */
-
     // Connects our starting point to all other nodes on the field (this does check
     // for obstacles)
     for (i in 0 until aStarMap.nodeSize) {
       val endNode = aStarMap.getNode(i)
       aStarMap.addEdge(Edge(startPoint!!, endNode), obstacles)
     }
-    // Finds the path using A*
-    val fullPath: List<Node?> = aStarMap.findPath(startPoint, finalNode) ?: return
 
-    // Returns if no path is found
+    // Finds the path using A*
+    val fullPath: List<Node?> = aStarMap.findPath(startPoint, finalNode) ?: return null
 
     // Gets speed of robot
     val chassisSpeeds = drive.currentSpeeds
     val fieldSpeeds = Translation2d(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond)
       .rotateBy(drive.heading)
     val robotSpeeds = ChassisSpeeds(fieldSpeeds.x, fieldSpeeds.y, chassisSpeeds.omegaRadiansPerSecond)
-    val startingSpeed = hypot(robotSpeeds.vxMetersPerSecond, robotSpeeds.vyMetersPerSecond)
+    val startingSpeed = if (RobotConstants.ALLIANCE_COLOR == Alliance.Red) {
+      max(
+        0.0,
+        -fieldSpeeds
+          .rotateBy(
+            finalPosition.translation
+              .minus(drive.pose.translation)
+              .angle
+              .unaryMinus()
+          )
+          .x
+      )
+    } else {
+      min(
+        0.0,
+        -fieldSpeeds
+          .rotateBy(
+            finalPosition.translation
+              .minus(drive.pose.translation)
+              .angle
+              .unaryMinus()
+          )
+          .x
+      )
+    }
 
     // Gets heading that the robot needs to go to reach first point
     var heading = Rotation2d(
@@ -113,7 +126,7 @@ class PPAStar(
           PathPoint(
             Translation2d(startPoint!!.x, startPoint!!.y),
             heading,
-            startPoint!!.holRot,
+            finalNode.holRot,
             startingSpeed
           )
         )
@@ -139,19 +152,13 @@ class PPAStar(
           PathPoint(
             Translation2d(fullPath[i]!!.x, fullPath[i]!!.y),
             heading,
-            null
+            finalNode.holRot
           )
         )
         addMidPoints(fullPathPoints, fullPath, i)
       }
     }
 
-    // Declare an array to hold PathPoint objects made from all other points
-    // specified in constructor.
-    fullPathPoints.forEach {
-      println(it.position)
-      println(it.nextControlLength)
-    }
     trajectory = PathPlanner.generatePath(constraints, fullPathPoints)
     // Display Trajectory
     // Change trajectory based on alliance color
@@ -162,20 +169,10 @@ class PPAStar(
       drive,
       trajectory
     )
-    pathDrivingCommand!!.schedule()
 
     field.getObject("PPAStar Path").setTrajectory(trajectory)
-  }
 
-  override fun isFinished(): Boolean {
-    return pathDrivingCommand == null || !pathDrivingCommand!!.isScheduled
-  }
-
-  override fun end(interrupted: Boolean) {
-    if (interrupted) {
-      pathDrivingCommand!!.cancel()
-    }
-    drive.stop()
+    return pathDrivingCommand
   }
 
   // Adds MidPoints so that Bézier curve doesn't curve into obstacle
@@ -203,7 +200,7 @@ class PPAStar(
               )
           ),
           heading,
-          null
+          finalNode.holRot
         )
       )
     }

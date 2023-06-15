@@ -15,30 +15,30 @@ object FieldConstants {
   var obstacles = listOf( // Charging Station
     Obstacle(
       doubleArrayOf(
-        2.90,
-        4.90,
-        4.90,
-        2.90
+        2.90 - RobotConstants.ROBOT_LENGTH / 2,
+        4.90 + RobotConstants.ROBOT_LENGTH / 2,
+        4.90 + RobotConstants.ROBOT_LENGTH / 2,
+        2.90 - RobotConstants.ROBOT_LENGTH / 2
       ),
       doubleArrayOf(
-        4.00,
-        4.00,
-        1.50,
-        1.50
+        4.00 + RobotConstants.ROBOT_WIDTH / 2,
+        4.00 + RobotConstants.ROBOT_WIDTH / 2,
+        1.50 - RobotConstants.ROBOT_WIDTH / 2,
+        1.50 - RobotConstants.ROBOT_WIDTH / 2
       )
     ),
     Obstacle(
       doubleArrayOf(
-        3.33,
-        3.33,
-        1.4,
-        1.4
+        3.33 + RobotConstants.ROBOT_LENGTH / 2,
+        3.33 + RobotConstants.ROBOT_LENGTH / 2,
+        1.4 - RobotConstants.ROBOT_LENGTH / 2,
+        1.4 - RobotConstants.ROBOT_LENGTH / 2
       ),
       doubleArrayOf(
-        5.3,
-        5.75,
-        5.3,
-        5.75
+        5.3 - RobotConstants.ROBOT_WIDTH / 2,
+        5.75 + RobotConstants.ROBOT_WIDTH / 2,
+        5.3 - RobotConstants.ROBOT_WIDTH / 2,
+        5.75 + RobotConstants.ROBOT_WIDTH / 2
       )
     )
   )

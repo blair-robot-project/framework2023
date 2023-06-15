@@ -15,7 +15,6 @@ import frc.team449.robot2023.auto.Paths
 import frc.team449.robot2023.auto.PositionChooser
 import frc.team449.robot2023.auto.routines.RoutineChooser
 import frc.team449.robot2023.commands.ArmCalibration
-import frc.team449.robot2023.commands.light.BlairAnimation
 import frc.team449.robot2023.constants.RobotConstants
 import frc.team449.robot2023.constants.subsystem.ArmConstants
 import frc.team449.robot2023.constants.vision.VisionConstants
@@ -67,6 +66,7 @@ class RobotLoop : TimedRobot() {
     SmartDashboard.putData("End Effector Subsystem", robot.endEffector)
 
     ControllerBindings(robot.driveController, robot.mechanismController, robot).bindButtons()
+
     robot.arm.defaultCommand = InstantCommand(
       robot.arm::holdArm,
       robot.arm

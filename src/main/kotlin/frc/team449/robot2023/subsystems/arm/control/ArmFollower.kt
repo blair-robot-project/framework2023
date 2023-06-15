@@ -23,7 +23,6 @@ open class ArmFollower(
 
   override fun execute() {
     val currTime = timer.get()
-
     if (trajectory != null) {
       val reference: ArmState = trajectory!!.sample(currTime)
       arm.moveToState(reference)

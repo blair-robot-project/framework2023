@@ -16,9 +16,7 @@ import edu.wpi.first.wpilibj.RobotBase.isReal
 import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.smartdashboard.Field2d
 import edu.wpi.first.wpilibj2.command.SubsystemBase
-import frc.team449.RobotLoop
 import frc.team449.control.VisionEstimator
-import frc.team449.robot2023.Robot
 import frc.team449.robot2023.constants.RobotConstants
 import frc.team449.robot2023.constants.drives.SwerveConstants
 import frc.team449.robot2023.constants.vision.VisionConstants
@@ -148,12 +146,10 @@ open class SwerveDrive(
     return Array(modules.size) { i -> modules[i].position }
   }
 
-
-   /** @return An array of [SwerveModuleState] for each module, containing speed and angle. */
+  /** @return An array of [SwerveModuleState] for each module, containing speed and angle. */
   private fun getStates(): Array<SwerveModuleState> {
     return Array(modules.size) { i -> modules[i].state }
   }
-
 
   private fun setRobotPose() {
     this.field.robotPose = this.pose

@@ -14,8 +14,8 @@ import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.ConditionalCommand
 import frc.team449.control.auto.HolonomicFollower
 import frc.team449.robot2023.Robot
-import frc.team449.robot2023.constants.auto.AutoConstants
 import frc.team449.robot2023.constants.RobotConstants
+import frc.team449.robot2023.constants.auto.AutoConstants
 import frc.team449.robot2023.constants.field.FieldConstants
 import java.util.function.BooleanSupplier
 import kotlin.math.PI
@@ -23,8 +23,7 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 
 class DoubleAlign {
-
-  /** TODO: Actually make this class do logic instead of two methods hardcoded for left and right
+  /**
    * This class was just created so all the double substation command creation clutter
    *  isn't in ControllerBindings
    */
