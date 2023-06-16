@@ -2,6 +2,8 @@ package frc.team449.robot2023.subsystems
 
 import edu.wpi.first.math.MathUtil
 import edu.wpi.first.math.geometry.Rotation2d
+import edu.wpi.first.util.sendable.Sendable
+import edu.wpi.first.util.sendable.SendableBuilder
 import edu.wpi.first.wpilibj.DoubleSolenoid
 import edu.wpi.first.wpilibj.XboxController
 import edu.wpi.first.wpilibj2.command.*
@@ -23,9 +25,12 @@ class ControllerBindings(
   private val driveController: XboxController,
   private val mechanismController: XboxController,
   private val robot: Robot
-) {
+) : Sendable {
 
   private val autoScorer = ScoringCommands(robot)
+
+  private var reqLevel: ScoringCommands.Levels? = null
+  private var reqNode: FieldConstants.TargetPosition? = null
 
   private fun changeCone(): Command {
     return robot.endEffector.runOnce(robot.endEffector::pistonOn).andThen(
@@ -34,6 +39,7 @@ class ControllerBindings(
           robot.groundIntake.retract(),
           WaitCommand(0.5), // wait for the intake to fully retract (this might take more time)
           ArmFollower(robot.arm) { robot.arm.chooseTraj(ArmConstants.CONE) }
+            .withInterruptBehavior(kCancelIncoming)
         ),
         InstantCommand()
       ) { robot.arm.desiredState == ArmConstants.CUBE }
@@ -44,7 +50,8 @@ class ControllerBindings(
     return robot.endEffector.runOnce(robot.endEffector::pistonRev).andThen(
       ConditionalCommand(
         SequentialCommandGroup(
-          ArmFollower(robot.arm) { robot.arm.chooseTraj(ArmConstants.CUBE) },
+          ArmFollower(robot.arm) { robot.arm.chooseTraj(ArmConstants.CUBE) }
+            .withInterruptBehavior(kCancelIncoming),
           WaitUntilCommand {
             robot.arm.distanceBetweenStates(robot.arm.state, ArmConstants.CUBE) <= 0.05 &&
               robot.arm.state.betaVel <= 0.05
@@ -54,6 +61,292 @@ class ControllerBindings(
         ),
         InstantCommand()
       ) { robot.arm.desiredState == ArmConstants.CONE }
+    )
+  }
+
+  private fun bindAutoScoring() {
+    JoystickButton(robot.scoringController, XboxController.Button.kRightBumper.value).onTrue(
+      changeCube()
+    )
+
+    JoystickButton(robot.scoringController, XboxController.Button.kLeftBumper.value).onTrue(
+      changeCone()
+    )
+
+    Trigger { abs(robot.scoringController.rightTriggerAxis) > 0.1 }.onTrue(
+      ArmSweep(
+        robot.arm,
+        { mechanismController.rightTriggerAxis },
+        Rotation2d.fromDegrees(15.0)
+      ).until { abs(mechanismController.rightTriggerAxis) < 0.1 }
+    )
+
+    Trigger { robot.scoringController.pov in 0..14 }.onTrue(
+      InstantCommand({ reqLevel = ScoringCommands.Levels.HIGH })
+    )
+
+    Trigger { robot.scoringController.pov in 255..285 }.onTrue(
+      InstantCommand({ reqLevel = ScoringCommands.Levels.MID })
+    )
+
+    Trigger { robot.scoringController.pov in 165..195 }.onTrue(
+      InstantCommand({ reqLevel = ScoringCommands.Levels.LOW })
+    )
+
+    Trigger { robot.scoringController.pov in 75..105 }.onTrue(
+      InstantCommand({ reqLevel = null; reqNode = null })
+    )
+
+    JoystickButton(robot.scoringController, XboxController.Button.kBack.value).onTrue(
+      InstantCommand({ reqNode = FieldConstants.TargetPosition.Position1 })
+    )
+
+    JoystickButton(robot.scoringController, XboxController.Button.kStart.value).onTrue(
+      InstantCommand({ reqNode = FieldConstants.TargetPosition.Position2 })
+    )
+
+    JoystickButton(robot.scoringController, XboxController.Button.kX.value).onTrue(
+      InstantCommand({ reqNode = FieldConstants.TargetPosition.Position3 })
+    )
+
+    JoystickButton(robot.scoringController, XboxController.Button.kA.value).onTrue(
+      InstantCommand({ reqNode = FieldConstants.TargetPosition.Position4 })
+    )
+
+    JoystickButton(robot.scoringController, XboxController.Button.kB.value).onTrue(
+      InstantCommand({ reqNode = FieldConstants.TargetPosition.Position5 })
+    )
+
+    JoystickButton(robot.scoringController, XboxController.Button.kY.value).onTrue(
+      InstantCommand({ reqNode = FieldConstants.TargetPosition.Position6 })
+    )
+
+    Trigger { robot.scoringController.rightY > 0.5 }.onTrue(
+      InstantCommand({ reqNode = FieldConstants.TargetPosition.Position9 })
+    )
+
+    Trigger { robot.scoringController.rightX < -0.5 || robot.scoringController.rightX > 0.5 }.onTrue(
+      InstantCommand({ reqNode = FieldConstants.TargetPosition.Position8 })
+    )
+
+    Trigger { robot.scoringController.rightY < -0.5 }.onTrue(
+      InstantCommand({ reqNode = FieldConstants.TargetPosition.Position7 })
+    )
+
+    Trigger { reqLevel == ScoringCommands.Levels.HIGH && reqNode == FieldConstants.TargetPosition.Position1 }.onTrue(
+      InstantCommand({
+        autoScorer.generateCommand(reqNode!!, reqLevel!!).schedule()
+        reqNode = null
+        reqLevel = null
+      })
+    )
+
+    Trigger { reqLevel == ScoringCommands.Levels.HIGH && reqNode == FieldConstants.TargetPosition.Position2 }.onTrue(
+      InstantCommand({
+        autoScorer.generateCommand(reqNode!!, reqLevel!!).schedule()
+        reqNode = null
+        reqLevel = null
+      })
+    )
+
+    Trigger { reqLevel == ScoringCommands.Levels.HIGH && reqNode == FieldConstants.TargetPosition.Position3 }.onTrue(
+      InstantCommand({
+        autoScorer.generateCommand(reqNode!!, reqLevel!!).schedule()
+        reqNode = null
+        reqLevel = null
+      })
+    )
+
+    Trigger { reqLevel == ScoringCommands.Levels.HIGH && reqNode == FieldConstants.TargetPosition.Position4 }.onTrue(
+      InstantCommand({
+        autoScorer.generateCommand(reqNode!!, reqLevel!!).schedule()
+        reqNode = null
+        reqLevel = null
+      })
+    )
+
+    Trigger { reqLevel == ScoringCommands.Levels.HIGH && reqNode == FieldConstants.TargetPosition.Position5 }.onTrue(
+      InstantCommand({
+        autoScorer.generateCommand(reqNode!!, reqLevel!!).schedule()
+        reqNode = null
+        reqLevel = null
+      })
+    )
+
+    Trigger { reqLevel == ScoringCommands.Levels.HIGH && reqNode == FieldConstants.TargetPosition.Position6 }.onTrue(
+      InstantCommand({
+        autoScorer.generateCommand(reqNode!!, reqLevel!!).schedule()
+        reqNode = null
+        reqLevel = null
+      })
+    )
+
+    Trigger { reqLevel == ScoringCommands.Levels.HIGH && reqNode == FieldConstants.TargetPosition.Position7 }.onTrue(
+      InstantCommand({
+        autoScorer.generateCommand(reqNode!!, reqLevel!!).schedule()
+        reqNode = null
+        reqLevel = null
+      })
+    )
+
+    Trigger { reqLevel == ScoringCommands.Levels.HIGH && reqNode == FieldConstants.TargetPosition.Position8 }.onTrue(
+      InstantCommand({
+        autoScorer.generateCommand(reqNode!!, reqLevel!!).schedule()
+        reqNode = null
+        reqLevel = null
+      })
+    )
+
+    Trigger { reqLevel == ScoringCommands.Levels.HIGH && reqNode == FieldConstants.TargetPosition.Position9 }.onTrue(
+      InstantCommand({
+        autoScorer.generateCommand(reqNode!!, reqLevel!!).schedule()
+        reqNode = null
+        reqLevel = null
+      })
+    )
+
+    Trigger { reqLevel == ScoringCommands.Levels.MID && reqNode == FieldConstants.TargetPosition.Position1 }.onTrue(
+      InstantCommand({
+        autoScorer.generateCommand(reqNode!!, reqLevel!!).schedule()
+        reqNode = null
+        reqLevel = null
+      })
+    )
+
+    Trigger { reqLevel == ScoringCommands.Levels.MID && reqNode == FieldConstants.TargetPosition.Position2 }.onTrue(
+      InstantCommand({
+        autoScorer.generateCommand(reqNode!!, reqLevel!!).schedule()
+        reqNode = null
+        reqLevel = null
+      })
+    )
+
+    Trigger { reqLevel == ScoringCommands.Levels.MID && reqNode == FieldConstants.TargetPosition.Position3 }.onTrue(
+      InstantCommand({
+        autoScorer.generateCommand(reqNode!!, reqLevel!!).schedule()
+        reqNode = null
+        reqLevel = null
+      })
+    )
+
+    Trigger { reqLevel == ScoringCommands.Levels.MID && reqNode == FieldConstants.TargetPosition.Position4 }.onTrue(
+      InstantCommand({
+        autoScorer.generateCommand(reqNode!!, reqLevel!!).schedule()
+        reqNode = null
+        reqLevel = null
+      })
+    )
+
+    Trigger { reqLevel == ScoringCommands.Levels.MID && reqNode == FieldConstants.TargetPosition.Position5 }.onTrue(
+      InstantCommand({
+        autoScorer.generateCommand(reqNode!!, reqLevel!!).schedule()
+        reqNode = null
+        reqLevel = null
+      })
+    )
+
+    Trigger { reqLevel == ScoringCommands.Levels.MID && reqNode == FieldConstants.TargetPosition.Position6 }.onTrue(
+      InstantCommand({
+        autoScorer.generateCommand(reqNode!!, reqLevel!!).schedule()
+        reqNode = null
+        reqLevel = null
+      })
+    )
+
+    Trigger { reqLevel == ScoringCommands.Levels.MID && reqNode == FieldConstants.TargetPosition.Position7 }.onTrue(
+      InstantCommand({
+        autoScorer.generateCommand(reqNode!!, reqLevel!!).schedule()
+        reqNode = null
+        reqLevel = null
+      })
+    )
+
+    Trigger { reqLevel == ScoringCommands.Levels.MID && reqNode == FieldConstants.TargetPosition.Position8 }.onTrue(
+      InstantCommand({
+        autoScorer.generateCommand(reqNode!!, reqLevel!!).schedule()
+        reqNode = null
+        reqLevel = null
+      })
+    )
+
+    Trigger { reqLevel == ScoringCommands.Levels.MID && reqNode == FieldConstants.TargetPosition.Position9 }.onTrue(
+      InstantCommand({
+        autoScorer.generateCommand(reqNode!!, reqLevel!!).schedule()
+        reqNode = null
+        reqLevel = null
+      })
+    )
+
+    Trigger { reqLevel == ScoringCommands.Levels.LOW && reqNode == FieldConstants.TargetPosition.Position1 }.onTrue(
+      InstantCommand({
+        autoScorer.generateCommand(reqNode!!, reqLevel!!).schedule()
+        reqNode = null
+        reqLevel = null
+      })
+    )
+
+    Trigger { reqLevel == ScoringCommands.Levels.LOW && reqNode == FieldConstants.TargetPosition.Position2 }.onTrue(
+      InstantCommand({
+        autoScorer.generateCommand(reqNode!!, reqLevel!!).schedule()
+        reqNode = null
+        reqLevel = null
+      })
+    )
+
+    Trigger { reqLevel == ScoringCommands.Levels.LOW && reqNode == FieldConstants.TargetPosition.Position3 }.onTrue(
+      InstantCommand({
+        autoScorer.generateCommand(reqNode!!, reqLevel!!).schedule()
+        reqNode = null
+        reqLevel = null
+      })
+    )
+
+    Trigger { reqLevel == ScoringCommands.Levels.LOW && reqNode == FieldConstants.TargetPosition.Position4 }.onTrue(
+      InstantCommand({
+        autoScorer.generateCommand(reqNode!!, reqLevel!!).schedule()
+        reqNode = null
+        reqLevel = null
+      })
+    )
+
+    Trigger { reqLevel == ScoringCommands.Levels.LOW && reqNode == FieldConstants.TargetPosition.Position5 }.onTrue(
+      InstantCommand({
+        autoScorer.generateCommand(reqNode!!, reqLevel!!).schedule()
+        reqNode = null
+        reqLevel = null
+      })
+    )
+
+    Trigger { reqLevel == ScoringCommands.Levels.LOW && reqNode == FieldConstants.TargetPosition.Position6 }.onTrue(
+      InstantCommand({
+        autoScorer.generateCommand(reqNode!!, reqLevel!!).schedule()
+        reqNode = null
+        reqLevel = null
+      })
+    )
+
+    Trigger { reqLevel == ScoringCommands.Levels.LOW && reqNode == FieldConstants.TargetPosition.Position7 }.onTrue(
+      InstantCommand({
+        autoScorer.generateCommand(reqNode!!, reqLevel!!).schedule()
+        reqNode = null
+        reqLevel = null
+      })
+    )
+
+    Trigger { reqLevel == ScoringCommands.Levels.LOW && reqNode == FieldConstants.TargetPosition.Position8 }.onTrue(
+      InstantCommand({
+        autoScorer.generateCommand(reqNode!!, reqLevel!!).schedule()
+        reqNode = null
+        reqLevel = null
+      })
+    )
+
+    Trigger { reqLevel == ScoringCommands.Levels.LOW && reqNode == FieldConstants.TargetPosition.Position9 }.onTrue(
+      InstantCommand({
+        autoScorer.generateCommand(reqNode!!, reqLevel!!).schedule()
+        reqNode = null
+        reqLevel = null
+      })
     )
   }
 
@@ -68,6 +361,8 @@ class ControllerBindings(
 //    Trigger { !robot.infrared.get() }.onTrue(
 //      PickupBlink().blinkGreen(robot)
 //    )
+
+    bindAutoScoring()
 
     JoystickButton(driveController, XboxController.Button.kRightBumper.value).onTrue(
       ConditionalCommand(
@@ -87,7 +382,8 @@ class ControllerBindings(
     Trigger { driveController.rightTriggerAxis > 0.8 }.onTrue(
       ConditionalCommand(
         SequentialCommandGroup(
-          ArmFollower(robot.arm) { robot.arm.chooseTraj(ArmConstants.CUBE) },
+          ArmFollower(robot.arm) { robot.arm.chooseTraj(ArmConstants.CUBE) }
+            .withInterruptBehavior(kCancelIncoming),
           WaitUntilCommand {
             robot.arm.distanceBetweenStates(robot.arm.state, ArmConstants.CUBE) <= 0.0175 &&
               robot.arm.state.betaVel <= 0.025 &&
@@ -108,6 +404,7 @@ class ControllerBindings(
         robot.groundIntake.retract(),
         robot.groundIntake.runOnce(robot.groundIntake::stop),
         ArmFollower(robot.arm) { robot.arm.chooseTraj(ArmConstants.STOW) }
+          .withInterruptBehavior(kCancelIncoming)
       )
     )
 
@@ -143,7 +440,13 @@ class ControllerBindings(
     )
 
     JoystickButton(mechanismController, XboxController.Button.kB.value).onTrue(
-      ArmFollower(robot.arm) { robot.arm.chooseTraj(ArmConstants.SINGLE) }.withInterruptBehavior(kCancelIncoming)
+      ArmFollower(robot.arm) { robot.arm.chooseTraj(ArmConstants.LOW) }
+        .withInterruptBehavior(kCancelIncoming)
+    )
+
+    Trigger { mechanismController.leftTriggerAxis > 0.8 }.onTrue(
+      ArmFollower(robot.arm) { robot.arm.chooseTraj(ArmConstants.SINGLE) }
+        .withInterruptBehavior(kCancelIncoming)
     )
 
     JoystickButton(mechanismController, XboxController.Button.kBack.value).onTrue(
@@ -158,23 +461,14 @@ class ControllerBindings(
       }.withInterruptBehavior(kCancelIncoming)
     )
 
-//    JoystickButton(mechanismController, XboxController.Button.kA.value).onTrue(
-//      ConditionalCommand(
-//        ArmFollower(robot.arm) { robot.arm.chooseTraj(ArmConstants.CUBE) }.withInterruptBehavior(kCancelIncoming),
-//        ArmFollower(robot.arm) { robot.arm.chooseTraj(ArmConstants.CONE) }.withInterruptBehavior(kCancelIncoming)
-//      ) { robot.endEffector.chooserPiston.get() == DoubleSolenoid.Value.kReverse }
-//    )
-
     JoystickButton(mechanismController, XboxController.Button.kX.value).onTrue(
-      InstantCommand({
-        autoScorer.generateCommand(FieldConstants.TargetPosition.Position4, ScoringCommands.Levels.HIGH).schedule()
-      })
-//      ArmFollower(robot.arm) { robot.arm.chooseTraj(ArmConstants.MID) }.withInterruptBehavior(kCancelIncoming)
+      ArmFollower(robot.arm) { robot.arm.chooseTraj(ArmConstants.MID) }
+        .withInterruptBehavior(kCancelIncoming)
     )
 
     JoystickButton(mechanismController, XboxController.Button.kY.value).onTrue(
-      InstantCommand()
-//      ArmFollower(robot.arm) { robot.arm.chooseTraj(ArmConstants.HIGH) }.withInterruptBehavior(kCancelIncoming)
+      ArmFollower(robot.arm) { robot.arm.chooseTraj(ArmConstants.HIGH) }
+        .withInterruptBehavior(kCancelIncoming)
     )
 
     Trigger { abs(mechanismController.rightTriggerAxis) > 0.1 }.onTrue(
@@ -213,25 +507,11 @@ class ControllerBindings(
       ArmFollower(robot.arm) { robot.arm.chooseTraj(ArmConstants.DOUBLE) }
         .andThen(InstantCommand(robot.endEffector::intake))
         .andThen(InstantCommand(robot.endEffector::pistonOn))
+        .withInterruptBehavior(kCancelIncoming)
     ).onFalse(
       ArmFollower(robot.arm) { robot.arm.chooseTraj(ArmConstants.BACK) }
+        .withInterruptBehavior(kCancelIncoming)
     )
-
-//    JoystickButton(driveController, XboxController.Button.kA.value).onTrue(
-//      ArmFollower(robot.arm) { robot.arm.chooseTraj(ArmConstants.SINGLE) }.withInterruptBehavior(kCancelIncoming)
-//    )
-
-//    JoystickButton(driveController, XboxController.Button.kB.value).onTrue(
-//      changeCube()
-//    )
-//
-//    JoystickButton(driveController, XboxController.Button.kX.value).onTrue(
-//      changeCone()
-//    )
-
-//    JoystickButton(driveController, XboxController.Button.kY.value).onTrue(
-//      ArmFollower(robot.arm) { robot.arm.chooseTraj(ArmConstants.HIGH) }.withInterruptBehavior(kCancelIncoming)
-//    )
 
     JoystickButton(driveController, XboxController.Button.kBack.value).onTrue(
       AutoBalance.create(robot.drive)
@@ -248,5 +528,10 @@ class ControllerBindings(
     JoystickButton(driveController, XboxController.Button.kX.value).onTrue(
       InstantCommand({ DoubleAlign().leftDoubleAlign(robot, driveController).schedule() })
     )
+  }
+
+  override fun initSendable(builder: SendableBuilder) {
+    builder.addStringProperty("Current Requested Node", { this.reqNode.toString() }, null)
+    builder.addStringProperty("Current Requested Level", { this.reqLevel.toString() }, null)
   }
 }

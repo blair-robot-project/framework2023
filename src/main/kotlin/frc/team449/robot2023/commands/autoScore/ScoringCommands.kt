@@ -14,12 +14,13 @@ class ScoringCommands(
 ) {
 
   private val levelsToArm: Map<Levels, ArmState> = mapOf(
-    Levels.LOW to ArmConstants.SINGLE,
+    Levels.LOW to ArmConstants.LOW,
     Levels.MID to ArmConstants.MID,
     Levels.HIGH to ArmConstants.HIGH
   )
 
   private val levelsToOffsets: Map<Levels, Double> = mapOf(
+    Levels.LOW to 0.0,
     Levels.MID to abs(robot.arm.kinematics.toCartesian(ArmConstants.MID).x) -
       ArmConstants.backToArmBase - FieldConstants.midNodeFromEdge,
     Levels.HIGH to abs(robot.arm.kinematics.toCartesian(ArmConstants.HIGH).x) -
@@ -31,8 +32,6 @@ class ScoringCommands(
       FieldConstants.PlacementPositions[position]!!.y,
       FieldConstants.PlacementPositions[position]!!.rotation
     )
-
-    println(finalPos)
 
     return ParallelCommandGroup(
       PPAStar(

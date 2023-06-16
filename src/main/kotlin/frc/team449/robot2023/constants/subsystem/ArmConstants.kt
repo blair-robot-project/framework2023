@@ -111,15 +111,15 @@ object ArmConstants {
   )
 
   // TODO: Create dedicated low trajectories that score from the back
-//  val LOW = ArmState(
-//    Rotation2d.fromDegrees(87.5),
-//    Rotation2d.fromDegrees(150.0)
-//  )
+  val LOW = ArmState(
+    Rotation2d.fromDegrees(72.5),
+    Rotation2d.fromDegrees(150.0)
+  )
 
   val BACK = ArmState(
     Rotation2d.fromDegrees(40.61),
     Rotation2d.fromDegrees(100.77)
   )
 
-  val STATES = listOf(SINGLE, DOUBLE, STOW, CONE, CUBE, MID, HIGH, BACK)
+  val STATES = listOf(SINGLE, DOUBLE, STOW, CONE, CUBE, MID, HIGH, BACK, LOW)
 }

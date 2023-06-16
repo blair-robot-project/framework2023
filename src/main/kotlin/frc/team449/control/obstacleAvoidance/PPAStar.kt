@@ -7,7 +7,6 @@ import com.pathplanner.lib.PathPoint
 import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.Translation2d
-import edu.wpi.first.math.kinematics.ChassisSpeeds
 import edu.wpi.first.wpilibj.DriverStation.Alliance
 import edu.wpi.first.wpilibj.smartdashboard.Field2d
 import edu.wpi.first.wpilibj2.command.Command
@@ -77,7 +76,6 @@ class PPAStar(
     val chassisSpeeds = drive.currentSpeeds
     val fieldSpeeds = Translation2d(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond)
       .rotateBy(drive.heading)
-    val robotSpeeds = ChassisSpeeds(fieldSpeeds.x, fieldSpeeds.y, chassisSpeeds.omegaRadiansPerSecond)
     val startingSpeed = if (RobotConstants.ALLIANCE_COLOR == Alliance.Red) {
       max(
         0.0,
@@ -167,7 +165,9 @@ class PPAStar(
     ) { RobotConstants.ALLIANCE_COLOR == Alliance.Red }[0]
     pathDrivingCommand = HolonomicFollower(
       drive,
-      trajectory
+      trajectory,
+      poseTol = Pose2d(0.035, 0.035, Rotation2d.fromDegrees(1.75)),
+      timeout = 2.0
     )
 
     field.getObject("PPAStar Path").setTrajectory(trajectory)

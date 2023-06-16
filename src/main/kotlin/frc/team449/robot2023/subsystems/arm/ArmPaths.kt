@@ -60,6 +60,11 @@ object ArmPaths {
   val backCone = ArmTrajectory("backCone.json")
   val coneBack = ArmTrajectory("coneBack.json")
 
+  val backLow = ArmTrajectory("backLow.json")
+  val lowBack = ArmTrajectory("lowBack.json")
+  val stowLow = ArmTrajectory("stowLow.json")
+  val lowStow = ArmTrajectory("lowStow.json")
+
   /** Auto Specific trajectories */
 
   val coneHigh = ArmTrajectory("coneHigh.json")
@@ -69,6 +74,10 @@ object ArmPaths {
   val highCube = ArmTrajectory("highCube.json")
 
   val trajectories = listOf(
+    backLow,
+    lowBack,
+    stowLow,
+    lowStow,
     stowSingle,
     singleStow,
     stowDouble,

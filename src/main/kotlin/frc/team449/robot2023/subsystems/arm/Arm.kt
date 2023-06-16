@@ -162,6 +162,8 @@ open class Arm(
           ArmPaths.backCone
         ArmConstants.CUBE ->
           ArmPaths.backCube
+        ArmConstants.LOW ->
+          ArmPaths.backLow
         else ->
           ArmPaths.backHigh
       }
@@ -179,6 +181,8 @@ open class Arm(
           ArmPaths.stowCone
         ArmConstants.CUBE ->
           ArmPaths.stowCube
+        ArmConstants.LOW ->
+          ArmPaths.stowLow
         else ->
           ArmPaths.stowHigh
       }
@@ -194,6 +198,8 @@ open class Arm(
           ArmPaths.cubeStow
         ArmConstants.CONE ->
           ArmPaths.coneStow
+        ArmConstants.LOW ->
+          ArmPaths.lowStow
         else ->
           ArmPaths.highStow
       }
@@ -209,6 +215,8 @@ open class Arm(
           ArmPaths.coneBack
         ArmConstants.CUBE ->
           ArmPaths.cubeBack
+        ArmConstants.LOW ->
+          ArmPaths.lowBack
         else ->
           ArmPaths.highBack
       }

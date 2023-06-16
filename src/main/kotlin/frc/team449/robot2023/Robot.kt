@@ -21,6 +21,8 @@ class Robot : RobotBase() {
 
   val mechanismController = XboxController(1)
 
+  val scoringController = XboxController(2)
+
   val ahrs = AHRS(SerialPort.Port.kMXP)
 
   // Instantiate/declare PDP and other stuff here

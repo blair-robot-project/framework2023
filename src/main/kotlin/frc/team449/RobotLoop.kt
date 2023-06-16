@@ -30,6 +30,7 @@ class RobotLoop : TimedRobot() {
   private val routineChooser: RoutineChooser = RoutineChooser(robot)
   private var autoCommand: Command? = null
   private var routineMap = hashMapOf<String, Command>()
+  private val controllerBinder = ControllerBindings(robot.driveController, robot.mechanismController, robot)
 
   override fun robotInit() {
     // Yes this should be a print statement, it's useful to know that robotInit started.
@@ -64,8 +65,9 @@ class RobotLoop : TimedRobot() {
     SmartDashboard.putData("Arm Subsystem", robot.arm)
     SmartDashboard.putData("Ground Intake Subsystem", robot.groundIntake)
     SmartDashboard.putData("End Effector Subsystem", robot.endEffector)
+    SmartDashboard.putData("Auto Scoring Info", controllerBinder)
 
-    ControllerBindings(robot.driveController, robot.mechanismController, robot).bindButtons()
+    controllerBinder.bindButtons()
 
     robot.arm.defaultCommand = InstantCommand(
       robot.arm::holdArm,
