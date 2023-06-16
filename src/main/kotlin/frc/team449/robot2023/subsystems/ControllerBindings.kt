@@ -76,9 +76,13 @@ class ControllerBindings(
     Trigger { abs(robot.scoringController.rightTriggerAxis) > 0.1 }.onTrue(
       ArmSweep(
         robot.arm,
-        { mechanismController.rightTriggerAxis },
+        { robot.scoringController.rightTriggerAxis },
         Rotation2d.fromDegrees(15.0)
-      ).until { abs(mechanismController.rightTriggerAxis) < 0.1 }
+      ).until { abs(robot.scoringController.rightTriggerAxis) < 0.1 }
+    )
+
+    Trigger { abs(robot.scoringController.leftTriggerAxis) > 0.5 }.onTrue(
+      robot.endEffector.runOnce(robot.endEffector::intakeReverse)
     )
 
     Trigger { robot.scoringController.pov in 0..14 }.onTrue(
@@ -87,7 +91,7 @@ class ControllerBindings(
       InstantCommand({ reqLevel = null })
     )
 
-    Trigger { robot.scoringController.pov in 255..285 || robot.scoringController.pov in 75..105}.onTrue(
+    Trigger { robot.scoringController.pov in 255..285 || robot.scoringController.pov in 75..105 }.onTrue(
       InstantCommand({ reqLevel = ScoringCommands.Levels.MID })
     ).onFalse(
       InstantCommand({ reqLevel = null })

@@ -127,7 +127,7 @@ open class SwerveDrive(
     for (module in modules)
       module.update()
 
-     if (cameras.isNotEmpty()) localize()
+    if (cameras.isNotEmpty()) localize()
 
     // Update the robot's pose using the gyro heading and the SwerveModulePositions of each module.
     this.poseEstimator.update(

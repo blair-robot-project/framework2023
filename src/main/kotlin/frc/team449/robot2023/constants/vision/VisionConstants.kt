@@ -37,14 +37,8 @@ VisionConstants {
 
   const val MAX_AMBIGUITY = 0.425
 
-  var MAX_DISTANCE_SINGLE_TAG = 2.0
-  var MAX_DISTANCE_MULTI_TAG = 4.0
-
-  const val AUTO_MAX_DISTANCE_SINGLE_TAG = 1.85
-  const val AUTO_MAX_DISTANCE_MULTI_TAG = 3.35
-
-  const val TELEOP_MAX_DISTANCE_SINGLE_TAG = 3.25
-  const val TELEOP_MAX_DISTANCE_MULTI_TAG = 4.5
+  var MAX_DISTANCE_SINGLE_TAG = 4.0
+  var MAX_DISTANCE_MULTI_TAG = 4.5
 
   /** List of cameras that we want to use */
   val ESTIMATORS: List<VisionEstimator> = listOf(

@@ -57,8 +57,14 @@ class VisionEstimator(
     // Remember the timestamp of the current result used
     poseCacheTimestampSeconds = cameraResult.timestampSeconds
 
+    var isFieldTarget = true
+
+    for (tag in cameraResult.targets) {
+      if (tagLayout.getTagPose(tag.fiducialId).isEmpty) isFieldTarget = false
+    }
+
     // If no targets seen, trivial case -- return empty result
-    return if (!cameraResult.hasTargets()) {
+    return if (!cameraResult.hasTargets() && !isFieldTarget) {
       Optional.empty()
     } else {
       multiTagPNPStrategy(cameraResult)
@@ -94,7 +100,7 @@ class VisionEstimator(
     val hasCalibData = cameraMatrixOpt.isPresent && distCoeffsOpt.isPresent
 
     // multi-target solvePNP
-    return if (hasCalibData && visCorners.size != knownVisTags.size * 4 || knownVisTags.isEmpty()) {
+    return if (hasCalibData && visCorners.size == knownVisTags.size * 4 || knownVisTags.isNotEmpty()) {
       val cameraMatrix = cameraMatrixOpt.get()
       val distCoeffs = distCoeffsOpt.get()
       val pnpResults = estimateCamPosePNP(cameraMatrix, distCoeffs, visCorners, knownVisTags)

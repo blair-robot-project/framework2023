@@ -4,6 +4,7 @@ import com.pathplanner.lib.PathConstraints
 import com.pathplanner.lib.PathPlanner
 import com.pathplanner.lib.PathPlannerTrajectory
 import com.pathplanner.lib.PathPoint
+import edu.wpi.first.math.controller.PIDController
 import edu.wpi.first.math.geometry.Pose2d
 import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.Translation2d
@@ -19,7 +20,7 @@ import kotlin.math.*
 
 class PPAStar(
   private val drive: SwerveDrive,
-  private val constraints: PathConstraints = PathConstraints(4.0, 5.25),
+  private val constraints: PathConstraints = PathConstraints(4.0, 2.5),
   private val finalPosition: Pose2d,
   private val obstacles: List<Obstacle> = FieldConstants.obstacles,
   private val aStarMap: VisGraph = MapCreator().createGraph(VisGraph(), FieldConstants.obstacles),
@@ -167,7 +168,9 @@ class PPAStar(
       drive,
       trajectory,
       poseTol = Pose2d(0.035, 0.035, Rotation2d.fromDegrees(1.75)),
-      timeout = 2.0
+      timeout = 2.0,
+      xController = PIDController(2.5, 0.0, 0.25),
+      yController = PIDController(2.5, 0.0, 0.25)
     )
 
     field.getObject("PPAStar Path").setTrajectory(trajectory)

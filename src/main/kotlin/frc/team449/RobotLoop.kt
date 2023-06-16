@@ -17,7 +17,6 @@ import frc.team449.robot2023.auto.routines.RoutineChooser
 import frc.team449.robot2023.commands.ArmCalibration
 import frc.team449.robot2023.constants.RobotConstants
 import frc.team449.robot2023.constants.subsystem.ArmConstants
-import frc.team449.robot2023.constants.vision.VisionConstants
 import frc.team449.robot2023.subsystems.ControllerBindings
 import frc.team449.robot2023.subsystems.arm.ArmPaths
 import io.github.oblarg.oblog.Logger
@@ -86,9 +85,6 @@ class RobotLoop : TimedRobot() {
   }
 
   override fun autonomousInit() {
-    VisionConstants.MAX_DISTANCE_SINGLE_TAG = VisionConstants.AUTO_MAX_DISTANCE_SINGLE_TAG
-    VisionConstants.MAX_DISTANCE_MULTI_TAG = VisionConstants.AUTO_MAX_DISTANCE_MULTI_TAG
-
     robot.arm.controller.reset()
 
     robot.arm.setArmDesiredState(ArmConstants.STOW)
@@ -106,9 +102,6 @@ class RobotLoop : TimedRobot() {
   override fun autonomousPeriodic() {}
 
   override fun teleopInit() {
-    VisionConstants.MAX_DISTANCE_SINGLE_TAG = VisionConstants.TELEOP_MAX_DISTANCE_SINGLE_TAG
-    VisionConstants.MAX_DISTANCE_MULTI_TAG = VisionConstants.TELEOP_MAX_DISTANCE_MULTI_TAG
-
     robot.arm.controller.reset()
     if (autoCommand != null) {
       CommandScheduler.getInstance().cancel(autoCommand)
