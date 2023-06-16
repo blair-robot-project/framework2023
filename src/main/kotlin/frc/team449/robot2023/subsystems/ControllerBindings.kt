@@ -83,54 +83,74 @@ class ControllerBindings(
 
     Trigger { robot.scoringController.pov in 0..14 }.onTrue(
       InstantCommand({ reqLevel = ScoringCommands.Levels.HIGH })
+    ).onFalse(
+      InstantCommand({ reqLevel = null })
     )
 
-    Trigger { robot.scoringController.pov in 255..285 }.onTrue(
+    Trigger { robot.scoringController.pov in 255..285 || robot.scoringController.pov in 75..105}.onTrue(
       InstantCommand({ reqLevel = ScoringCommands.Levels.MID })
+    ).onFalse(
+      InstantCommand({ reqLevel = null })
     )
 
     Trigger { robot.scoringController.pov in 165..195 }.onTrue(
       InstantCommand({ reqLevel = ScoringCommands.Levels.LOW })
-    )
-
-    Trigger { robot.scoringController.pov in 75..105 }.onTrue(
-      InstantCommand({ reqLevel = null; reqNode = null })
+    ).onFalse(
+      InstantCommand({ reqLevel = null })
     )
 
     JoystickButton(robot.scoringController, XboxController.Button.kBack.value).onTrue(
       InstantCommand({ reqNode = FieldConstants.TargetPosition.Position1 })
+    ).onFalse(
+      InstantCommand({ reqNode = null })
     )
 
     JoystickButton(robot.scoringController, XboxController.Button.kStart.value).onTrue(
       InstantCommand({ reqNode = FieldConstants.TargetPosition.Position2 })
+    ).onFalse(
+      InstantCommand({ reqNode = null })
     )
 
     JoystickButton(robot.scoringController, XboxController.Button.kX.value).onTrue(
       InstantCommand({ reqNode = FieldConstants.TargetPosition.Position3 })
+    ).onFalse(
+      InstantCommand({ reqNode = null })
     )
 
     JoystickButton(robot.scoringController, XboxController.Button.kA.value).onTrue(
       InstantCommand({ reqNode = FieldConstants.TargetPosition.Position4 })
+    ).onFalse(
+      InstantCommand({ reqNode = null })
     )
 
     JoystickButton(robot.scoringController, XboxController.Button.kB.value).onTrue(
       InstantCommand({ reqNode = FieldConstants.TargetPosition.Position5 })
+    ).onFalse(
+      InstantCommand({ reqNode = null })
     )
 
     JoystickButton(robot.scoringController, XboxController.Button.kY.value).onTrue(
       InstantCommand({ reqNode = FieldConstants.TargetPosition.Position6 })
+    ).onFalse(
+      InstantCommand({ reqNode = null })
     )
 
     Trigger { robot.scoringController.rightY > 0.5 }.onTrue(
       InstantCommand({ reqNode = FieldConstants.TargetPosition.Position9 })
+    ).onFalse(
+      InstantCommand({ reqNode = null })
     )
 
     Trigger { robot.scoringController.rightX < -0.5 || robot.scoringController.rightX > 0.5 }.onTrue(
       InstantCommand({ reqNode = FieldConstants.TargetPosition.Position8 })
+    ).onFalse(
+      InstantCommand({ reqNode = null })
     )
 
     Trigger { robot.scoringController.rightY < -0.5 }.onTrue(
       InstantCommand({ reqNode = FieldConstants.TargetPosition.Position7 })
+    ).onFalse(
+      InstantCommand({ reqNode = null })
     )
 
     Trigger { reqLevel == ScoringCommands.Levels.HIGH && reqNode == FieldConstants.TargetPosition.Position1 }.onTrue(
@@ -475,7 +495,7 @@ class ControllerBindings(
       ArmSweep(
         robot.arm,
         { mechanismController.rightTriggerAxis },
-        Rotation2d.fromDegrees(15.0)
+        Rotation2d.fromDegrees(20.0)
       ).until { abs(mechanismController.rightTriggerAxis) < 0.1 }
     )
 
